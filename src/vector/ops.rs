@@ -1,13 +1,14 @@
-use super::Vector;
 use std::ops::Add;
+
+use crate::Vector;
 
 impl<T: PartialEq, const N: usize> PartialEq for Vector<T, N> {
     fn eq(&self, other: &Self) -> bool {
-        return self.0 == other.0;
+        self.0 == other.0
     }
 }
 
-impl<T: Add<Output = T> + Copy, const N: usize> Add for Vector<T, N> {
+impl<T: Add<Output = T> + Copy, const N: usize> Add for &Vector<T, N> {
     type Output = Vector<T, N>;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -19,7 +20,7 @@ impl<T: Add<Output = T> + Copy, const N: usize> Add for Vector<T, N> {
             result_arr[i] = self_arr[i] + rhs_arr[i];
         }
 
-        return Vector(result_arr);
+        Vector(result_arr)
     }
 }
 
@@ -43,8 +44,10 @@ mod tests {
     fn add() {
         let a = Vector([8.218, -9.341]);
         let b = Vector([-1.129, 2.111]);
-        let r = a + b;
+        let r = &a + &b;
 
-        assert_eq!(r, Vector([7.089, -7.23]))
+        let round = |x: f64| (x * 1000.0).round() / 1000.0;
+
+        assert_eq!(r.map(round), Vector([7.089, -7.23]))
     }
 }
