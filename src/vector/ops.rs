@@ -59,9 +59,7 @@ mod tests {
         let b = Vector([-1.129, 2.111]);
         let r = &a + &b;
 
-        let round = |x: f64| (x * 1000.0).round() / 1000.0;
-
-        assert_eq!(r.map(round), Vector([7.089, -7.23]))
+        assert_eq!(r.round(3), Vector([7.089, -7.23]))
     }
 
     #[test]
@@ -70,8 +68,6 @@ mod tests {
         let b = Vector([-8.223, 0.878]);
         let r = &a - &b;
 
-        let round = |x: f64| (x * 1000.0).round() / 1000.0;
-
-        assert_eq!(r.map(round), Vector([15.342, 7.337]))
+        assert_eq!(r.round(3), Vector([15.342, 7.337]))
     }
 }
