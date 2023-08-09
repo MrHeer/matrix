@@ -1,6 +1,8 @@
 mod fmt;
 mod ops;
 
+use crate::round::round_factory;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vector<const N: usize>(pub [f64; N]);
 
@@ -17,6 +19,11 @@ impl<const N: usize> Vector<N> {
         Vector(result_arr)
     }
 
+    pub fn round(self, precision: usize) -> Vector<N> {
+        let round = round_factory(precision);
+        self.map(round)
+    }
+
     pub fn scale(self, n: f64) -> Vector<N> {
         self.map(|x| x * n)
     }
@@ -29,15 +36,18 @@ impl<const N: usize> Vector<N> {
         sum.sqrt()
     }
 
-    pub fn round(self, precision: usize) -> Vector<N> {
-        let factor = 10.0_f64.powi(precision as i32);
-        let round = |x: f64| (x * factor).round() / factor;
-        self.map(round)
+    pub fn normalize<'a>(self) -> Result<Vector<N>, &'a str> {
+        let magnitude = self.magnitude();
+        if magnitude == 0. {
+            return Err("zero vector has no normalize.");
+        }
+        Ok(self.scale(1. / self.magnitude()))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::round::round_factory;
     use crate::Vector;
 
     #[test]
@@ -58,6 +68,13 @@ mod tests {
     }
 
     #[test]
+    fn round() {
+        let v = Vector([1.671, -1.012, -0.318]);
+
+        assert_eq!(v.round(0), Vector([2., -1., -0.]));
+    }
+
+    #[test]
     fn scale() {
         let v = Vector([1.671, -1.012, -0.318]);
 
@@ -66,15 +83,34 @@ mod tests {
 
     #[test]
     fn magnitude() {
-        let v = Vector([3.,4.]);
+        let v = Vector([3., 4.]);
+        let round = round_factory(3);
 
         assert_eq!(v.magnitude(), 5.);
+        assert_eq!(round(Vector([-0.221, 7.437]).magnitude()), 7.44);
+        assert_eq!(round(Vector([8.813, -1.331, -6.247]).magnitude()), 10.884);
     }
 
     #[test]
-    fn round() {
-        let v = Vector([1.671, -1.012, -0.318]);
+    fn normalize() {
+        let v = Vector([-1., 1., 1.]);
+        let n = v.normalize().unwrap().round(3);
 
-        assert_eq!(v.round(0), Vector([2., -1., -0.]));
+        assert_eq!(n, Vector([-0.577, 0.577, 0.577]));
+        assert_eq!(
+            Vector([5.581, -2.136]).normalize().unwrap().round(3),
+            Vector([0.934, -0.357])
+        );
+        assert_eq!(
+            Vector([1.996, 3.108, -4.554]).normalize().unwrap().round(3),
+            Vector([0.34, 0.53, -0.777])
+        );
+    }
+
+    #[test]
+    fn normalize_zero() {
+        let v = Vector([0., 0.]);
+
+        assert_eq!(v.normalize(), Err("zero vector has no normalize."))
     }
 }

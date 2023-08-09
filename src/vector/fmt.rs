@@ -5,7 +5,7 @@ use crate::Vector;
 impl<const N: usize> Display for Vector<N> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if N == 0 {
-            return write!(f, "[]")
+            return write!(f, "[]");
         }
 
         let self_arr = self.0;
