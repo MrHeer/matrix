@@ -1,7 +1,7 @@
 mod fmt;
 mod ops;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vector<T, const N: usize>(pub [T; N]);
 
 impl<T, const N: usize> Vector<T, N> {
