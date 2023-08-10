@@ -1,7 +1,7 @@
 use std::ops::Add;
 use std::ops::Sub;
 
-use crate::Vector;
+use crate::{vector, Vector};
 
 impl<const N: usize> PartialEq for Vector<N> {
     fn eq(&self, other: &Self) -> bool {
@@ -19,7 +19,7 @@ impl<const N: usize> Add for Vector<N> {
 
         (0..N).for_each(|i| result_arr[i] = self_arr[i] + rhs_arr[i]);
 
-        Vector(result_arr)
+        vector(result_arr)
     }
 }
 
@@ -33,41 +33,41 @@ impl<const N: usize> Sub for Vector<N> {
 
         (0..N).for_each(|i| result_arr[i] = self_arr[i] - rhs_arr[i]);
 
-        Vector(result_arr)
+        vector(result_arr)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::Vector;
+    use crate::vector;
 
     #[test]
     fn eq() {
-        assert_eq!(Vector([]), Vector([]));
-        assert_eq!(Vector([2., 1., 2.]), Vector([2., 1., 2.]));
-        assert_ne!(Vector([3., 1., 2.]), Vector([2., 1., 2.]));
+        assert_eq!(vector([]), vector([]));
+        assert_eq!(vector([2., 1., 2.]), vector([2., 1., 2.]));
+        assert_ne!(vector([3., 1., 2.]), vector([2., 1., 2.]));
     }
 
     #[test]
     fn ne() {
-        assert_ne!(Vector([3., 1., 2.]), Vector([2., 1., 2.]));
+        assert_ne!(vector([3., 1., 2.]), vector([2., 1., 2.]));
     }
 
     #[test]
     fn add() {
-        let a = Vector([8.218, -9.341]);
-        let b = Vector([-1.129, 2.111]);
+        let a = vector([8.218, -9.341]);
+        let b = vector([-1.129, 2.111]);
         let r = a + b;
 
-        assert_eq!(r.round(3), Vector([7.089, -7.23]))
+        assert_eq!(r.round(3), vector([7.089, -7.23]))
     }
 
     #[test]
     fn sub() {
-        let a = Vector([7.119, 8.215]);
-        let b = Vector([-8.223, 0.878]);
+        let a = vector([7.119, 8.215]);
+        let b = vector([-8.223, 0.878]);
         let r = a - b;
 
-        assert_eq!(r.round(3), Vector([15.342, 7.337]))
+        assert_eq!(r.round(3), vector([15.342, 7.337]))
     }
 }

@@ -1,4 +1,4 @@
 mod round;
 mod vector;
 
-pub use vector::Vector;
+pub use vector::*;

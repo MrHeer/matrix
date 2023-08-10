@@ -20,11 +20,11 @@ impl<const N: usize> Display for Vector<N> {
 
 #[cfg(test)]
 mod tests {
-    use crate::Vector;
+    use crate::vector;
 
     #[test]
     fn fmt() {
-        assert_eq!(format!("{}", Vector([])), "[]");
-        assert_eq!(format!("{}", Vector([2., 1., 3.])), "[2, 1, 3]");
+        assert_eq!(format!("{}", vector([])), "[]");
+        assert_eq!(format!("{}", vector([2., 1., 3.])), "[2, 1, 3]");
     }
 }
