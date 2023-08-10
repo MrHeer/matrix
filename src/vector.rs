@@ -12,6 +12,10 @@ impl<const N: usize> From<[f64; N]> for Vector<N> {
     }
 }
 
+pub fn vector<const N: usize>(v: [f64; N]) -> Vector<N> {
+    Vector::from(v)
+}
+
 impl<const N: usize> Vector<N> {
     pub fn dim(&self) -> usize {
         N
@@ -22,7 +26,7 @@ impl<const N: usize> Vector<N> {
         F: FnMut(f64) -> f64,
     {
         let result_arr = self.0.map(f);
-        Vector(result_arr)
+        vector(result_arr)
     }
 
     pub fn round(self, precision: usize) -> Vector<N> {
@@ -30,8 +34,8 @@ impl<const N: usize> Vector<N> {
         self.map(round)
     }
 
-    pub fn scale(self, n: f64) -> Vector<N> {
-        self.map(|x| x * n)
+    pub fn scale(self, scalar: f64) -> Vector<N> {
+        self.map(|x| x * scalar)
     }
 
     pub fn magnitude(self) -> f64 {
@@ -49,15 +53,22 @@ impl<const N: usize> Vector<N> {
         }
         Ok(self.scale(1. / self.magnitude()))
     }
-}
 
-pub fn vector<const N: usize>(v: [f64; N]) -> Vector<N> {
-    Vector::from(v)
+    pub fn dot(self, other: Vector<N>) -> f64 {
+        let mut result = 0.;
+        (0..N).for_each(|i| result += self.0[i] * other.0[i]);
+        result
+    }
+
+    /// return the angle between the two vectors in radian.
+    pub fn angle<'a>(self, other: Vector<N>) -> Result<f64, &'a str> {
+        Ok(self.normalize()?.dot(other.normalize()?).acos())
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{round::round_factory, vector};
+    use crate::{math::to_deg, round::round_factory, vector};
 
     #[test]
     fn dim() {
@@ -92,34 +103,63 @@ mod tests {
 
     #[test]
     fn magnitude() {
-        let v = vector([3., 4.]);
         let round = round_factory(3);
 
+        let v = vector([3., 4.]);
         assert_eq!(v.magnitude(), 5.);
-        assert_eq!(round(vector([-0.221, 7.437]).magnitude()), 7.44);
-        assert_eq!(round(vector([8.813, -1.331, -6.247]).magnitude()), 10.884);
+
+        let v = vector([-0.221, 7.437]);
+        assert_eq!(round(v.magnitude()), 7.44);
+
+        let v = vector([8.813, -1.331, -6.247]);
+        assert_eq!(round(v.magnitude()), 10.884);
     }
 
     #[test]
     fn normalize() {
         let v = vector([-1., 1., 1.]);
         let n = v.normalize().unwrap().round(3);
-
         assert_eq!(n, vector([-0.577, 0.577, 0.577]));
-        assert_eq!(
-            vector([5.581, -2.136]).normalize().unwrap().round(3),
-            vector([0.934, -0.357])
-        );
-        assert_eq!(
-            vector([1.996, 3.108, -4.554]).normalize().unwrap().round(3),
-            vector([0.34, 0.53, -0.777])
-        );
+
+        let v = vector([5.581, -2.136]);
+        let n = v.normalize().unwrap().round(3);
+        assert_eq!(n, vector([0.934, -0.357]));
+
+        let v = vector([1.996, 3.108, -4.554]);
+        let n = v.normalize().unwrap().round(3);
+        assert_eq!(n, vector([0.34, 0.53, -0.777]));
     }
 
     #[test]
     fn normalize_zero() {
         let v = vector([0., 0.]);
 
-        assert_eq!(v.normalize(), Err("zero vector has no normalize."))
+        assert_eq!(v.normalize(), Err("zero vector has no normalize."));
+    }
+
+    #[test]
+    fn dot() {
+        let round = round_factory(3);
+
+        let v = vector([7.887, 4.138]);
+        let w = vector([-8.802, 6.776]);
+        assert_eq!(round(v.dot(w)), -41.382);
+
+        let v = vector([-5.955, -4.904, -1.874]);
+        let w = vector([-4.496, -8.755, 7.103]);
+        assert_eq!(round(v.dot(w)), 56.397);
+    }
+
+    #[test]
+    fn angle() {
+        let round = round_factory(3);
+
+        let v = vector([3.183, -7.627]);
+        let w = vector([-2.668, 5.319]);
+        assert_eq!(round(v.angle(w).unwrap()), 3.072);
+
+        let v = vector([7.35, 0.221, 5.188]);
+        let w = vector([2.751, 8.259, 3.985]);
+        assert_eq!(round(to_deg(v.angle(w).unwrap())), 60.276);
     }
 }
