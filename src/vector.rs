@@ -8,6 +8,12 @@ use crate::round::round_factory;
 #[derive(Debug, Clone, Copy)]
 pub struct Vector<const N: usize>([f64; N]);
 
+#[derive(Debug, Clone, Copy)]
+pub struct Projection<const N: usize> {
+    pub parallel: Vector<N>,
+    pub orthogonal: Vector<N>,
+}
+
 impl<const N: usize> From<[f64; N]> for Vector<N> {
     fn from(value: [f64; N]) -> Self {
         Vector(value)
@@ -101,6 +107,17 @@ impl<const N: usize> Vector<N> {
     pub fn is_orthogonal(self, other: Vector<N>) -> bool {
         self.is_orthogonal_with_tolerance(other, None)
     }
+
+    pub fn project<'a>(self, basis: Vector<N>) -> Result<Projection<N>, &'a str> {
+        let u = basis.normalize()?;
+        let weight = self.dot(u);
+        let parallel = u.scale(weight);
+        let orthogonal = self - parallel;
+        Ok(Projection {
+            parallel,
+            orthogonal,
+        })
+    }
 }
 
 #[cfg(test)]
@@ -155,16 +172,16 @@ mod tests {
     #[test]
     fn normalize() {
         let v = vector([-1., 1., 1.]);
-        let n = v.normalize().unwrap().round(3);
-        assert_eq!(n, vector([-0.577, 0.577, 0.577]));
+        let u = v.normalize().unwrap().round(3);
+        assert_eq!(u, vector([-0.577, 0.577, 0.577]));
 
         let v = vector([5.581, -2.136]);
-        let n = v.normalize().unwrap().round(3);
-        assert_eq!(n, vector([0.934, -0.357]));
+        let u = v.normalize().unwrap().round(3);
+        assert_eq!(u, vector([0.934, -0.357]));
 
         let v = vector([1.996, 3.108, -4.554]);
-        let n = v.normalize().unwrap().round(3);
-        assert_eq!(n, vector([0.34, 0.53, -0.777]));
+        let u = v.normalize().unwrap().round(3);
+        assert_eq!(u, vector([0.34, 0.53, -0.777]));
     }
 
     #[test]
@@ -226,5 +243,33 @@ mod tests {
         let w = vector([0., 0.]);
         assert_eq!(v.is_parallel(w), true);
         assert_eq!(v.is_orthogonal(w), true);
+    }
+
+    #[test]
+    fn project() {
+        let v = vector([3.039, 1.879]);
+        let b = vector([0.825, 2.036]);
+        let projection = v.project(b).unwrap();
+        assert_eq!(projection.parallel.round(3), vector([1.083, 2.672]));
+
+        let v = vector([-9.88, -3.264, -8.159]);
+        let b = vector([-2.155, -9.353, -9.473]);
+        let projection = v.project(b).unwrap();
+        assert_eq!(
+            projection.orthogonal.round(3),
+            vector([-8.35, 3.376, -1.434])
+        );
+
+        let v = vector([3.009, -6.172, 3.692, -2.51]);
+        let b = vector([6.404, -9.144, 2.759, 8.718]);
+        let projection = v.project(b).unwrap();
+        assert_eq!(
+            projection.parallel.round(3),
+            vector([1.969, -2.811, 0.848, 2.680])
+        );
+        assert_eq!(
+            projection.orthogonal.round(3),
+            vector([1.04, -3.361, 2.844, -5.19])
+        );
     }
 }
