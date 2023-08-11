@@ -1,6 +1,8 @@
 mod fmt;
 mod ops;
 
+use std::f64::consts::PI;
+
 use crate::round::round_factory;
 
 #[derive(Debug, Clone, Copy)]
@@ -51,7 +53,7 @@ impl<const N: usize> Vector<N> {
         if magnitude == 0. {
             return Err("zero vector has no normalize.");
         }
-        Ok(self.scale(1. / self.magnitude()))
+        Ok(self.scale(1. / magnitude))
     }
 
     pub fn dot(self, other: Vector<N>) -> f64 {
@@ -62,7 +64,42 @@ impl<const N: usize> Vector<N> {
 
     /// return the angle between the two vectors in radian.
     pub fn angle<'a>(self, other: Vector<N>) -> Result<f64, &'a str> {
-        Ok(self.normalize()?.dot(other.normalize()?).acos())
+        let self_normalize = self.normalize()?;
+        let other_normalize = other.normalize()?;
+        let dot = self_normalize.dot(other_normalize);
+        let fixed_dot = match dot {
+            dot if dot < -1.0 => -1.0,
+            dot if dot > 1.0 => 1.0,
+            dot => dot,
+        };
+
+        Ok(fixed_dot.acos())
+    }
+
+    pub fn is_zero_with_tolerance(self, tolerance: Option<f64>) -> bool {
+        let tolerance = tolerance.unwrap_or(1e-10);
+        self.magnitude().abs() < tolerance
+    }
+
+    pub fn is_zero(self) -> bool {
+        self.is_zero_with_tolerance(None)
+    }
+
+    pub fn is_parallel(self, other: Vector<N>) -> bool {
+        let angle = self.angle(other);
+        match angle {
+            Ok(rad) => rad == 0. || rad == PI,
+            Err(_) => true,
+        }
+    }
+
+    pub fn is_orthogonal_with_tolerance(self, other: Vector<N>, tolerance: Option<f64>) -> bool {
+        let tolerance = tolerance.unwrap_or(1e-10);
+        self.dot(other).abs() < tolerance
+    }
+
+    pub fn is_orthogonal(self, other: Vector<N>) -> bool {
+        self.is_orthogonal_with_tolerance(other, None)
     }
 }
 
@@ -161,5 +198,33 @@ mod tests {
         let v = vector([7.35, 0.221, 5.188]);
         let w = vector([2.751, 8.259, 3.985]);
         assert_eq!(round(to_deg(v.angle(w).unwrap())), 60.276);
+    }
+
+    #[test]
+    fn checks() {
+        let v = vector([0., 0.]);
+        let w = vector([-0.1, 0.001]);
+        assert_eq!(v.is_zero(), true);
+        assert_eq!(w.is_zero(), false);
+
+        let v = vector([-7.579, -7.88]);
+        let w = vector([22.737, 23.64]);
+        assert_eq!(v.is_parallel(w), true);
+        assert_eq!(v.is_orthogonal(w), false);
+
+        let v = vector([-2.029, 9.97, 4.172]);
+        let w = vector([-9.231, -6.639, -7.245]);
+        assert_eq!(v.is_parallel(w), false);
+        assert_eq!(v.is_orthogonal(w), false);
+
+        let v = vector([-2.328, -7.284, -1.214]);
+        let w = vector([-1.821, 1.072, -2.94]);
+        assert_eq!(v.is_parallel(w), false);
+        assert_eq!(v.is_orthogonal(w), true);
+
+        let v = vector([2.118, 4.827]);
+        let w = vector([0., 0.]);
+        assert_eq!(v.is_parallel(w), true);
+        assert_eq!(v.is_orthogonal(w), true);
     }
 }
