@@ -1,4 +1,5 @@
 mod fmt;
+mod iter;
 mod ops;
 
 use std::f64::consts::PI;
@@ -15,13 +16,13 @@ pub struct Projection<const DIM: usize> {
 }
 
 impl<const DIM: usize> From<[f64; DIM]> for Vector<DIM> {
-    fn from(value: [f64; DIM]) -> Self {
-        Vector(value)
+    fn from(arr: [f64; DIM]) -> Self {
+        Vector(arr)
     }
 }
 
-pub fn vector<const DIM: usize>(v: [f64; DIM]) -> Vector<DIM> {
-    Vector::from(v)
+pub fn vector<const DIM: usize>(arr: [f64; DIM]) -> Vector<DIM> {
+    Vector::from(arr)
 }
 
 impl<const DIM: usize> Vector<DIM> {
@@ -33,8 +34,7 @@ impl<const DIM: usize> Vector<DIM> {
     where
         F: FnMut(f64) -> f64,
     {
-        let result_arr = self.0.map(f);
-        vector(result_arr)
+        self.into_iter().map(f).collect()
     }
 
     pub fn round(self, precision: usize) -> Vector<DIM> {
@@ -48,7 +48,7 @@ impl<const DIM: usize> Vector<DIM> {
 
     pub fn magnitude(self) -> f64 {
         let mut sum = 0.;
-        self.0.into_iter().for_each(|x| {
+        self.into_iter().for_each(|x| {
             sum += x.powi(2);
         });
         sum.sqrt()
