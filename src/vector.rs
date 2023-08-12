@@ -6,30 +6,30 @@ use std::f64::consts::PI;
 use crate::round::round_factory;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Vector<const N: usize>([f64; N]);
+pub struct Vector<const DIM: usize>([f64; DIM]);
 
 #[derive(Debug, Clone, Copy)]
-pub struct Projection<const N: usize> {
-    pub parallel: Vector<N>,
-    pub orthogonal: Vector<N>,
+pub struct Projection<const DIM: usize> {
+    pub parallel: Vector<DIM>,
+    pub orthogonal: Vector<DIM>,
 }
 
-impl<const N: usize> From<[f64; N]> for Vector<N> {
-    fn from(value: [f64; N]) -> Self {
+impl<const DIM: usize> From<[f64; DIM]> for Vector<DIM> {
+    fn from(value: [f64; DIM]) -> Self {
         Vector(value)
     }
 }
 
-pub fn vector<const N: usize>(v: [f64; N]) -> Vector<N> {
+pub fn vector<const DIM: usize>(v: [f64; DIM]) -> Vector<DIM> {
     Vector::from(v)
 }
 
-impl<const N: usize> Vector<N> {
+impl<const DIM: usize> Vector<DIM> {
     pub fn dim(&self) -> usize {
-        N
+        DIM
     }
 
-    pub fn map<F>(self, f: F) -> Vector<N>
+    pub fn map<F>(self, f: F) -> Vector<DIM>
     where
         F: FnMut(f64) -> f64,
     {
@@ -37,12 +37,12 @@ impl<const N: usize> Vector<N> {
         vector(result_arr)
     }
 
-    pub fn round(self, precision: usize) -> Vector<N> {
+    pub fn round(self, precision: usize) -> Vector<DIM> {
         let round = round_factory(precision);
         self.map(round)
     }
 
-    pub fn scale(self, scalar: f64) -> Vector<N> {
+    pub fn scale(self, scalar: f64) -> Vector<DIM> {
         self.map(|x| x * scalar)
     }
 
@@ -54,7 +54,7 @@ impl<const N: usize> Vector<N> {
         sum.sqrt()
     }
 
-    pub fn normalize<'a>(self) -> Result<Vector<N>, &'a str> {
+    pub fn normalize<'a>(self) -> Result<Vector<DIM>, &'a str> {
         let magnitude = self.magnitude();
         if magnitude == 0. {
             return Err("zero vector has no normalize.");
@@ -62,14 +62,14 @@ impl<const N: usize> Vector<N> {
         Ok(self.scale(1. / magnitude))
     }
 
-    pub fn dot(self, other: Vector<N>) -> f64 {
+    pub fn dot(self, other: Vector<DIM>) -> f64 {
         let mut result = 0.;
-        (0..N).for_each(|i| result += self.0[i] * other.0[i]);
+        (0..DIM).for_each(|i| result += self.0[i] * other.0[i]);
         result
     }
 
     /// return the angle between the two vectors in radian.
-    pub fn angle<'a>(self, other: Vector<N>) -> Result<f64, &'a str> {
+    pub fn angle<'a>(self, other: Vector<DIM>) -> Result<f64, &'a str> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
         let dot = self_normalize.dot(other_normalize);
@@ -91,7 +91,7 @@ impl<const N: usize> Vector<N> {
         self.is_zero_with_tolerance(None)
     }
 
-    pub fn is_parallel(self, other: Vector<N>) -> bool {
+    pub fn is_parallel(self, other: Vector<DIM>) -> bool {
         let angle = self.angle(other);
         match angle {
             Ok(rad) => rad == 0. || rad == PI,
@@ -99,16 +99,16 @@ impl<const N: usize> Vector<N> {
         }
     }
 
-    pub fn is_orthogonal_with_tolerance(self, other: Vector<N>, tolerance: Option<f64>) -> bool {
+    pub fn is_orthogonal_with_tolerance(self, other: Vector<DIM>, tolerance: Option<f64>) -> bool {
         let tolerance = tolerance.unwrap_or(1e-10);
         self.dot(other).abs() < tolerance
     }
 
-    pub fn is_orthogonal(self, other: Vector<N>) -> bool {
+    pub fn is_orthogonal(self, other: Vector<DIM>) -> bool {
         self.is_orthogonal_with_tolerance(other, None)
     }
 
-    pub fn project<'a>(self, basis: Vector<N>) -> Result<Projection<N>, &'a str> {
+    pub fn project<'a>(self, basis: Vector<DIM>) -> Result<Projection<DIM>, &'a str> {
         let u = basis.normalize()?;
         let weight = self.dot(u);
         let parallel = u.scale(weight);

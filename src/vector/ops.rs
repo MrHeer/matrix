@@ -3,31 +3,31 @@ use std::ops::Sub;
 
 use crate::{vector, Vector};
 
-impl<const N: usize> PartialEq for Vector<N> {
+impl<const DIM: usize> PartialEq for Vector<DIM> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
 }
 
-impl<const N: usize> Add for Vector<N> {
-    type Output = Vector<N>;
+impl<const DIM: usize> Add for Vector<DIM> {
+    type Output = Vector<DIM>;
 
     fn add(self, rhs: Self) -> Self::Output {
         let mut result_arr = self.0;
 
-        (0..N).for_each(|i| result_arr[i] = self.0[i] + rhs.0[i]);
+        (0..DIM).for_each(|i| result_arr[i] = self.0[i] + rhs.0[i]);
 
         vector(result_arr)
     }
 }
 
-impl<const N: usize> Sub for Vector<N> {
-    type Output = Vector<N>;
+impl<const DIM: usize> Sub for Vector<DIM> {
+    type Output = Vector<DIM>;
 
     fn sub(self, rhs: Self) -> Self::Output {
         let mut result_arr = self.0;
 
-        (0..N).for_each(|i| result_arr[i] = self.0[i] - rhs.0[i]);
+        (0..DIM).for_each(|i| result_arr[i] = self.0[i] - rhs.0[i]);
 
         vector(result_arr)
     }
