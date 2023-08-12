@@ -47,7 +47,7 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     pub fn magnitude(self) -> f64 {
-        let mut sum = 0.0_f64;
+        let mut sum = 0.;
         self.0.into_iter().for_each(|x| {
             sum += x.powi(2);
         });
@@ -63,23 +63,23 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     pub fn dot(self, other: Vector<DIM>) -> f64 {
-        let mut result = 0.;
-        (0..DIM).for_each(|i| result += self.0[i] * other.0[i]);
-        result
+        let mut dot_product = 0.;
+        (0..DIM).for_each(|i| dot_product += self.0[i] * other.0[i]);
+        dot_product
     }
 
     /// return the angle between the two vectors in radian.
     pub fn angle<'a>(self, other: Vector<DIM>) -> Result<f64, &'a str> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
-        let dot = self_normalize.dot(other_normalize);
-        let fixed_dot = match dot {
-            dot if dot < -1.0 => -1.0,
-            dot if dot > 1.0 => 1.0,
-            dot => dot,
+        let dot_product = self_normalize.dot(other_normalize);
+        let fixed_prodcut = match dot_product {
+            dot_product if dot_product < -1.0 => -1.0,
+            dot_product if dot_product > 1.0 => 1.0,
+            dot_product => dot_product,
         };
 
-        Ok(fixed_dot.acos())
+        Ok(fixed_prodcut.acos())
     }
 
     pub fn is_zero_with_tolerance(self, tolerance: Option<f64>) -> bool {
@@ -117,6 +117,23 @@ impl<const DIM: usize> Vector<DIM> {
             parallel,
             orthogonal,
         })
+    }
+}
+
+impl Vector<3> {
+    pub fn cross(self, other: Vector<3>) -> Vector<3> {
+        let [x1, y1, z1] = self.0;
+        let [x2, y2, z2] = other.0;
+        vector([y1 * z2 - y2 * z1, -(x1 * z2 - x2 * z1), x1 * y2 - x2 * y1])
+    }
+
+    pub fn area_of_parallelogram(self, other: Vector<3>) -> f64 {
+        let cross_product = self.cross(other);
+        cross_product.magnitude()
+    }
+
+    pub fn area_of_triangle(self, other: Vector<3>) -> f64 {
+        self.area_of_parallelogram(other) / 2.
     }
 }
 
@@ -271,5 +288,35 @@ mod tests {
             projection.orthogonal.round(3),
             vector([1.04, -3.361, 2.844, -5.19])
         );
+    }
+
+    #[test]
+    fn cross() {
+        let v = vector([5., 3., -2.]);
+        let w = vector([-1., 0., 3.]);
+        let c = v.cross(w);
+        assert_eq!(c.round(3), vector([9., -13., 3.]));
+        assert_eq!(v.is_orthogonal(c), true);
+        assert_eq!(w.is_orthogonal(c), true);
+
+        let v = vector([8.462, 7.893, -8.187]);
+        let w = vector([6.984, -5.975, 4.778]);
+        assert_eq!(v.cross(w).round(3), vector([-11.205, -97.609, -105.685]));
+    }
+
+    #[test]
+    fn area_of_parallelogra() {
+        let round = round_factory(3);
+        let v = vector([-8.987, -9.838, 5.031]);
+        let w = vector([-4.268, -1.861, -8.866]);
+        assert_eq!(round(v.area_of_parallelogram(w)), 142.122);
+    }
+
+    #[test]
+    fn area_of_triangle() {
+        let round = round_factory(3);
+        let v = vector([1.5, 9.547, 3.691]);
+        let w = vector([-6.007, 0.124, 5.772]);
+        assert_eq!(round(v.area_of_triangle(w)), 42.565);
     }
 }

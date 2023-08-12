@@ -15,5 +15,8 @@ Some operations for `Vector` and `Matrix`.
 - [x] Parallel
 - [x] Orthogonal
 - [x] Project
+- [x] Cross
+- [x] Area of parallelogra
+- [x] Area_of triangle
 
 > The test data from [Linear Algebra Refresher Course](https://learn.udacity.com/courses/ud953)
