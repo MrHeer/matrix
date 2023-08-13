@@ -4,7 +4,7 @@ mod ops;
 
 use std::f64::consts::PI;
 
-use crate::round::round_factory;
+use crate::{math, round::round_factory};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vector<const DIM: usize>([f64; DIM]);
@@ -83,8 +83,7 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     pub fn is_zero_with_tolerance(self, tolerance: Option<f64>) -> bool {
-        let tolerance = tolerance.unwrap_or(1e-10);
-        self.magnitude().abs() < tolerance
+        math::is_zero_with_tolerance(self.magnitude(), tolerance)
     }
 
     pub fn is_zero(self) -> bool {
@@ -100,8 +99,7 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     pub fn is_orthogonal_with_tolerance(self, other: Vector<DIM>, tolerance: Option<f64>) -> bool {
-        let tolerance = tolerance.unwrap_or(1e-10);
-        self.dot(other).abs() < tolerance
+        math::is_zero_with_tolerance(self.dot(other), tolerance)
     }
 
     pub fn is_orthogonal(self, other: Vector<DIM>) -> bool {
