@@ -13,10 +13,8 @@ impl<const DIM: usize> IntoIterator for Vector<DIM> {
 impl<const DIM: usize> FromIterator<f64> for Vector<DIM> {
     fn from_iter<T: IntoIterator<Item = f64>>(iter: T) -> Self {
         let mut arr = [0.; DIM];
-        let mut index: usize = 0;
-        for ele in iter {
-            arr[index] = ele;
-            index += 1;
+        for (index, item) in iter.into_iter().enumerate() {
+            arr[index] = item;
         }
         vector(arr)
     }
@@ -31,8 +29,8 @@ mod tests {
         let v = vector([2., 3., 5.]);
         let iter = v.into_iter();
         let mut vec = vec![];
-        for ele in iter {
-            vec.push(ele);
+        for item in iter {
+            vec.push(item);
         }
         assert_eq!(vec, vec![2., 3., 5.]);
     }

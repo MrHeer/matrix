@@ -17,9 +17,18 @@ pub fn is_zero(value: f64) -> bool {
     is_zero_with_tolerance(value, None)
 }
 
+pub fn first_nonzero_index(iter: impl IntoIterator<Item = f64>) -> Result<usize, String> {
+    for (index, item) in iter.into_iter().enumerate() {
+        if is_zero(item) == false {
+            return Ok(index);
+        }
+    }
+    Err(String::from("No nonzero elements found."))
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::math::*;
+    use crate::math::{first_nonzero_index, *};
 
     #[test]
     fn deg_to_rad() {
@@ -38,5 +47,14 @@ mod tests {
         assert_eq!(is_zero(1e-10), false);
         assert_eq!(is_zero(1e-11), true);
         assert_eq!(is_zero_with_tolerance(0.01, Some(0.1)), true);
+    }
+
+    #[test]
+    fn first_nonzero_index_case() {
+        assert_eq!(first_nonzero_index([0., 0., 2., 3.]), Ok(2));
+        assert_eq!(
+            first_nonzero_index([0., 0., 0.]),
+            Err(String::from("No nonzero elements found."))
+        );
     }
 }

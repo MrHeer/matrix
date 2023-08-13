@@ -54,22 +54,24 @@ impl<const DIM: usize> Vector<DIM> {
         sum.sqrt()
     }
 
-    pub fn normalize<'a>(self) -> Result<Vector<DIM>, &'a str> {
+    pub fn normalize(self) -> Result<Vector<DIM>, String> {
         let magnitude = self.magnitude();
         if magnitude == 0. {
-            return Err("zero vector has no normalize.");
+            return Err(String::from("zero vector has no normalize."));
         }
         Ok(self.scale(1. / magnitude))
     }
 
     pub fn dot(self, other: Vector<DIM>) -> f64 {
         let mut dot_product = 0.;
-        (0..DIM).for_each(|i| dot_product += self.0[i] * other.0[i]);
+        self.into_iter()
+            .enumerate()
+            .for_each(|(index, _)| dot_product += self[index] * other[index]);
         dot_product
     }
 
     /// return the angle between the two vectors in radian.
-    pub fn angle<'a>(self, other: Vector<DIM>) -> Result<f64, &'a str> {
+    pub fn angle(self, other: Vector<DIM>) -> Result<f64, String> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
         let dot_product = self_normalize.dot(other_normalize);
@@ -106,7 +108,7 @@ impl<const DIM: usize> Vector<DIM> {
         self.is_orthogonal_with_tolerance(other, None)
     }
 
-    pub fn project<'a>(self, basis: Vector<DIM>) -> Result<Projection<DIM>, &'a str> {
+    pub fn project(self, basis: Vector<DIM>) -> Result<Projection<DIM>, String> {
         let u = basis.normalize()?;
         let weight = self.dot(u);
         let parallel = u.scale(weight);
@@ -203,7 +205,10 @@ mod tests {
     fn normalize_zero() {
         let v = vector([0., 0.]);
 
-        assert_eq!(v.normalize(), Err("zero vector has no normalize."));
+        assert_eq!(
+            v.normalize(),
+            Err(String::from("zero vector has no normalize."))
+        );
     }
 
     #[test]

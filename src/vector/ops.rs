@@ -1,7 +1,6 @@
-use std::ops::Add;
-use std::ops::Sub;
+use std::ops::{Add, Index, Sub};
 
-use crate::{vector, Vector};
+use crate::Vector;
 
 impl<const DIM: usize> PartialEq for Vector<DIM> {
     fn eq(&self, other: &Self) -> bool {
@@ -13,11 +12,10 @@ impl<const DIM: usize> Add for Vector<DIM> {
     type Output = Vector<DIM>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        let mut result_arr = self.0;
-
-        (0..DIM).for_each(|i| result_arr[i] = self.0[i] + rhs.0[i]);
-
-        vector(result_arr)
+        self.into_iter()
+            .enumerate()
+            .map(|(index, _)| self[index] + rhs[index])
+            .collect::<Vector<DIM>>()
     }
 }
 
@@ -25,11 +23,18 @@ impl<const DIM: usize> Sub for Vector<DIM> {
     type Output = Vector<DIM>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        let mut result_arr = self.0;
+        self.into_iter()
+            .enumerate()
+            .map(|(index, _)| self[index] - rhs[index])
+            .collect::<Vector<DIM>>()
+    }
+}
 
-        (0..DIM).for_each(|i| result_arr[i] = self.0[i] - rhs.0[i]);
+impl<const DIM: usize> Index<usize> for Vector<DIM> {
+    type Output = f64;
 
-        vector(result_arr)
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
     }
 }
 
@@ -65,5 +70,11 @@ mod tests {
         let r = a - b;
 
         assert_eq!(r.round(3), vector([15.342, 7.337]));
+    }
+
+    #[test]
+    fn index() {
+        let v = vector([2., 3., 0.]);
+        assert_eq!(v[1], 3.);
     }
 }
