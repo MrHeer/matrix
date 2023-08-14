@@ -8,13 +8,13 @@ impl<const DIM: usize> Display for Vector<DIM> {
             return write!(f, "[]");
         }
 
-        let self_arr = self.0;
         write!(f, "[")?;
-        for i in 0..(DIM - 1) {
-            write!(f, "{}, ", self_arr[i])?;
+        for index in 0..(DIM - 1) {
+            self[index].fmt(f)?;
+            write!(f, ", ")?;
         }
-        write!(f, "{}]", self_arr[DIM - 1])?;
-        return Ok(());
+        self[DIM - 1].fmt(f)?;
+        write!(f, "]")
     }
 }
 
@@ -26,5 +26,9 @@ mod tests {
     fn fmt() {
         assert_eq!(format!("{}", vector([])), "[]");
         assert_eq!(format!("{}", vector([2., 1., 3.])), "[2, 1, 3]");
+        assert_eq!(
+            format!("{:.1}", vector([2.53, 1.7823, 3.161])),
+            "[2.5, 1.8, 3.2]"
+        );
     }
 }

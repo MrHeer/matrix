@@ -1,6 +1,9 @@
+mod fmt;
+mod ops;
+
 use crate::{math::first_nonzero_index, vector, Vector};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 pub struct Line<const DIM: usize> {
     normal_vector: Vector<DIM>,
     constant_term: f64,
@@ -34,10 +37,20 @@ impl Line<2> {
 
 #[cfg(test)]
 mod tests {
+    use crate::vector;
+
     use super::Line;
 
     #[test]
     fn new() {
         let line = Line::new(None, None);
+        assert_eq!(line.normal_vector, vector([0.; 2]));
+        assert_eq!(line.constant_term, 0.);
+        assert_eq!(line.basepoint, None);
+
+        let line = Line::new(Some(vector([0., 1.])), Some(3.));
+        assert_eq!(line.normal_vector, vector([0., 1.]));
+        assert_eq!(line.constant_term, 3.);
+        assert_eq!(line.basepoint, Some(vector([0.0, 3.0])));
     }
 }

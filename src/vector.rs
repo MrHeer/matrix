@@ -6,6 +6,8 @@ use std::f64::consts::PI;
 
 use crate::{math, round::round_factory};
 
+const ZERO_VECTOR_HAS_NO_NORMALIZE: &str = "Zero vector has no normalize.";
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vector<const DIM: usize>([f64; DIM]);
 
@@ -57,7 +59,7 @@ impl<const DIM: usize> Vector<DIM> {
     pub fn normalize(self) -> Result<Vector<DIM>, String> {
         let magnitude = self.magnitude();
         if magnitude == 0. {
-            return Err(String::from("zero vector has no normalize."));
+            return Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE));
         }
         Ok(self.scale(1. / magnitude))
     }
@@ -139,6 +141,7 @@ impl Vector<3> {
 
 #[cfg(test)]
 mod tests {
+    use super::ZERO_VECTOR_HAS_NO_NORMALIZE;
     use crate::{math::to_deg, round::round_factory, vector};
 
     #[test]
@@ -207,7 +210,7 @@ mod tests {
 
         assert_eq!(
             v.normalize(),
-            Err(String::from("zero vector has no normalize."))
+            Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE))
         );
     }
 

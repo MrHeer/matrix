@@ -1,5 +1,7 @@
 use std::f64::consts::PI;
 
+const NO_NONZERO_ELEMENTS_FOUND: &str = "No nonzero elements found.";
+
 pub fn to_rad(deg: f64) -> f64 {
     deg * PI / 180.
 }
@@ -23,12 +25,12 @@ pub fn first_nonzero_index(iter: impl IntoIterator<Item = f64>) -> Result<usize,
             return Ok(index);
         }
     }
-    Err(String::from("No nonzero elements found."))
+    Err(String::from(NO_NONZERO_ELEMENTS_FOUND))
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::math::{first_nonzero_index, *};
+    use crate::math::*;
 
     #[test]
     fn deg_to_rad() {
@@ -54,7 +56,7 @@ mod tests {
         assert_eq!(first_nonzero_index([0., 0., 2., 3.]), Ok(2));
         assert_eq!(
             first_nonzero_index([0., 0., 0.]),
-            Err(String::from("No nonzero elements found."))
+            Err(String::from(NO_NONZERO_ELEMENTS_FOUND))
         );
     }
 }

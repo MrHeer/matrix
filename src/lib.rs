@@ -1,4 +1,4 @@
-mod line;
+pub mod line;
 pub mod math;
 pub mod round;
 mod vector;
