@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::math::{first_nonzero_index, is_zero};
+use crate::math::{first_nonzero_index, is_zero, ne};
 
 use super::Line;
 
@@ -22,7 +22,7 @@ fn write_coefficient(
 
     // write coefficine
     let coefficien = coefficient.abs();
-    if is_zero(coefficien - 1.) == false {
+    if ne(coefficien, 1.) {
         coefficien.fmt(f)?;
     }
     Ok(())

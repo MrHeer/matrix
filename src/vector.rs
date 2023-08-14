@@ -4,7 +4,10 @@ mod ops;
 
 use std::f64::consts::PI;
 
-use crate::{math, round::round_factory};
+use crate::{
+    math::{self, eq, is_zero},
+    round::round_factory,
+};
 
 const ZERO_VECTOR_HAS_NO_NORMALIZE: &str = "Zero vector has no normalize.";
 
@@ -58,7 +61,7 @@ impl<const DIM: usize> Vector<DIM> {
 
     pub fn normalize(self) -> Result<Vector<DIM>, String> {
         let magnitude = self.magnitude();
-        if magnitude == 0. {
+        if is_zero(magnitude) {
             return Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE));
         }
         Ok(self.scale(1. / magnitude))
@@ -97,7 +100,7 @@ impl<const DIM: usize> Vector<DIM> {
     pub fn is_parallel(self, other: Vector<DIM>) -> bool {
         let angle = self.angle(other);
         match angle {
-            Ok(rad) => rad == 0. || rad == PI,
+            Ok(rad) => is_zero(rad) || eq(rad, PI),
             Err(_) => true,
         }
     }
