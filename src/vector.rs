@@ -11,7 +11,7 @@ use crate::{
 
 const ZERO_VECTOR_HAS_NO_NORMALIZE: &str = "Zero vector has no normalize.";
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vector<const DIM: usize>([f64; DIM]);
 
 #[derive(Debug, Clone, Copy)]
@@ -35,23 +35,23 @@ impl<const DIM: usize> Vector<DIM> {
         DIM
     }
 
-    pub fn map<F>(self, f: F) -> Vector<DIM>
+    pub fn map<F>(&self, f: F) -> Vector<DIM>
     where
         F: FnMut(f64) -> f64,
     {
         self.into_iter().map(f).collect()
     }
 
-    pub fn round(self, precision: usize) -> Vector<DIM> {
+    pub fn round(&self, precision: usize) -> Vector<DIM> {
         let round = round_factory(precision);
         self.map(round)
     }
 
-    pub fn scale(self, scalar: f64) -> Vector<DIM> {
+    pub fn scale(&self, scalar: f64) -> Vector<DIM> {
         self.map(|x| x * scalar)
     }
 
-    pub fn magnitude(self) -> f64 {
+    pub fn magnitude(&self) -> f64 {
         let mut sum = 0.;
         self.into_iter().for_each(|x| {
             sum += x.powi(2);
@@ -59,7 +59,7 @@ impl<const DIM: usize> Vector<DIM> {
         sum.sqrt()
     }
 
-    pub fn normalize(self) -> Result<Vector<DIM>, String> {
+    pub fn normalize(&self) -> Result<Vector<DIM>, String> {
         let magnitude = self.magnitude();
         if is_zero(magnitude) {
             return Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE));
@@ -67,7 +67,7 @@ impl<const DIM: usize> Vector<DIM> {
         Ok(self.scale(1. / magnitude))
     }
 
-    pub fn dot(self, other: Vector<DIM>) -> f64 {
+    pub fn dot(&self, other: &Vector<DIM>) -> f64 {
         let mut dot_product = 0.;
         self.into_iter()
             .enumerate()
@@ -76,10 +76,10 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     /// return the angle between the two vectors in radian.
-    pub fn angle(self, other: Vector<DIM>) -> Result<f64, String> {
+    pub fn angle(&self, other: &Vector<DIM>) -> Result<f64, String> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
-        let dot_product = self_normalize.dot(other_normalize);
+        let dot_product = self_normalize.dot(&other_normalize);
         let fixed_prodcut = match dot_product {
             dot_product if dot_product < -1.0 => -1.0,
             dot_product if dot_product > 1.0 => 1.0,
@@ -89,15 +89,15 @@ impl<const DIM: usize> Vector<DIM> {
         Ok(fixed_prodcut.acos())
     }
 
-    pub fn is_zero_with_tolerance(self, tolerance: Option<f64>) -> bool {
+    pub fn is_zero_with_tolerance(&self, tolerance: Option<f64>) -> bool {
         math::is_zero_with_tolerance(self.magnitude(), tolerance)
     }
 
-    pub fn is_zero(self) -> bool {
+    pub fn is_zero(&self) -> bool {
         self.is_zero_with_tolerance(None)
     }
 
-    pub fn is_parallel(self, other: Vector<DIM>) -> bool {
+    pub fn is_parallel(&self, other: &Vector<DIM>) -> bool {
         let angle = self.angle(other);
         match angle {
             Ok(rad) => is_zero(rad) || eq(rad, PI),
@@ -105,19 +105,23 @@ impl<const DIM: usize> Vector<DIM> {
         }
     }
 
-    pub fn is_orthogonal_with_tolerance(self, other: Vector<DIM>, tolerance: Option<f64>) -> bool {
+    pub fn is_orthogonal_with_tolerance(
+        &self,
+        other: &Vector<DIM>,
+        tolerance: Option<f64>,
+    ) -> bool {
         math::is_zero_with_tolerance(self.dot(other), tolerance)
     }
 
-    pub fn is_orthogonal(self, other: Vector<DIM>) -> bool {
+    pub fn is_orthogonal(&self, other: &Vector<DIM>) -> bool {
         self.is_orthogonal_with_tolerance(other, None)
     }
 
-    pub fn project(self, basis: Vector<DIM>) -> Result<Projection<DIM>, String> {
+    pub fn project(&self, basis: &Vector<DIM>) -> Result<Projection<DIM>, String> {
         let u = basis.normalize()?;
-        let weight = self.dot(u);
+        let weight = self.dot(&u);
         let parallel = u.scale(weight);
-        let orthogonal = self - parallel;
+        let orthogonal = *self - parallel;
         Ok(Projection {
             parallel,
             orthogonal,
@@ -126,18 +130,18 @@ impl<const DIM: usize> Vector<DIM> {
 }
 
 impl Vector<3> {
-    pub fn cross(self, other: Vector<3>) -> Vector<3> {
+    pub fn cross(&self, other: &Vector<3>) -> Vector<3> {
         let [x1, y1, z1] = self.0;
         let [x2, y2, z2] = other.0;
         vector([y1 * z2 - y2 * z1, -(x1 * z2 - x2 * z1), x1 * y2 - x2 * y1])
     }
 
-    pub fn area_of_parallelogram(self, other: Vector<3>) -> f64 {
+    pub fn area_of_parallelogram(&self, other: &Vector<3>) -> f64 {
         let cross_product = self.cross(other);
         cross_product.magnitude()
     }
 
-    pub fn area_of_triangle(self, other: Vector<3>) -> f64 {
+    pub fn area_of_triangle(&self, other: &Vector<3>) -> f64 {
         self.area_of_parallelogram(other) / 2.
     }
 }
@@ -223,11 +227,11 @@ mod tests {
 
         let v = vector([7.887, 4.138]);
         let w = vector([-8.802, 6.776]);
-        assert_eq!(round(v.dot(w)), -41.382);
+        assert_eq!(round(v.dot(&w)), -41.382);
 
         let v = vector([-5.955, -4.904, -1.874]);
         let w = vector([-4.496, -8.755, 7.103]);
-        assert_eq!(round(v.dot(w)), 56.397);
+        assert_eq!(round(v.dot(&w)), 56.397);
     }
 
     #[test]
@@ -236,11 +240,11 @@ mod tests {
 
         let v = vector([3.183, -7.627]);
         let w = vector([-2.668, 5.319]);
-        assert_eq!(round(v.angle(w).unwrap()), 3.072);
+        assert_eq!(round(v.angle(&w).unwrap()), 3.072);
 
         let v = vector([7.35, 0.221, 5.188]);
         let w = vector([2.751, 8.259, 3.985]);
-        assert_eq!(round(to_deg(v.angle(w).unwrap())), 60.276);
+        assert_eq!(round(to_deg(v.angle(&w).unwrap())), 60.276);
     }
 
     #[test]
@@ -252,35 +256,35 @@ mod tests {
 
         let v = vector([-7.579, -7.88]);
         let w = vector([22.737, 23.64]);
-        assert_eq!(v.is_parallel(w), true);
-        assert_eq!(v.is_orthogonal(w), false);
+        assert_eq!(v.is_parallel(&w), true);
+        assert_eq!(v.is_orthogonal(&w), false);
 
         let v = vector([-2.029, 9.97, 4.172]);
         let w = vector([-9.231, -6.639, -7.245]);
-        assert_eq!(v.is_parallel(w), false);
-        assert_eq!(v.is_orthogonal(w), false);
+        assert_eq!(v.is_parallel(&w), false);
+        assert_eq!(v.is_orthogonal(&w), false);
 
         let v = vector([-2.328, -7.284, -1.214]);
         let w = vector([-1.821, 1.072, -2.94]);
-        assert_eq!(v.is_parallel(w), false);
-        assert_eq!(v.is_orthogonal(w), true);
+        assert_eq!(v.is_parallel(&w), false);
+        assert_eq!(v.is_orthogonal(&w), true);
 
         let v = vector([2.118, 4.827]);
         let w = vector([0., 0.]);
-        assert_eq!(v.is_parallel(w), true);
-        assert_eq!(v.is_orthogonal(w), true);
+        assert_eq!(v.is_parallel(&w), true);
+        assert_eq!(v.is_orthogonal(&w), true);
     }
 
     #[test]
     fn project() {
         let v = vector([3.039, 1.879]);
         let b = vector([0.825, 2.036]);
-        let projection = v.project(b).unwrap();
+        let projection = v.project(&b).unwrap();
         assert_eq!(projection.parallel.round(3), vector([1.083, 2.672]));
 
         let v = vector([-9.88, -3.264, -8.159]);
         let b = vector([-2.155, -9.353, -9.473]);
-        let projection = v.project(b).unwrap();
+        let projection = v.project(&b).unwrap();
         assert_eq!(
             projection.orthogonal.round(3),
             vector([-8.35, 3.376, -1.434])
@@ -288,7 +292,7 @@ mod tests {
 
         let v = vector([3.009, -6.172, 3.692, -2.51]);
         let b = vector([6.404, -9.144, 2.759, 8.718]);
-        let projection = v.project(b).unwrap();
+        let projection = v.project(&b).unwrap();
         assert_eq!(
             projection.parallel.round(3),
             vector([1.969, -2.811, 0.848, 2.680])
@@ -303,14 +307,14 @@ mod tests {
     fn cross() {
         let v = vector([5., 3., -2.]);
         let w = vector([-1., 0., 3.]);
-        let c = v.cross(w);
+        let c = v.cross(&w);
         assert_eq!(c.round(3), vector([9., -13., 3.]));
-        assert_eq!(v.is_orthogonal(c), true);
-        assert_eq!(w.is_orthogonal(c), true);
+        assert_eq!(v.is_orthogonal(&c), true);
+        assert_eq!(w.is_orthogonal(&c), true);
 
         let v = vector([8.462, 7.893, -8.187]);
         let w = vector([6.984, -5.975, 4.778]);
-        assert_eq!(v.cross(w).round(3), vector([-11.205, -97.609, -105.685]));
+        assert_eq!(v.cross(&w).round(3), vector([-11.205, -97.609, -105.685]));
     }
 
     #[test]
@@ -318,7 +322,7 @@ mod tests {
         let round = round_factory(3);
         let v = vector([-8.987, -9.838, 5.031]);
         let w = vector([-4.268, -1.861, -8.866]);
-        assert_eq!(round(v.area_of_parallelogram(w)), 142.122);
+        assert_eq!(round(v.area_of_parallelogram(&w)), 142.122);
     }
 
     #[test]
@@ -326,6 +330,6 @@ mod tests {
         let round = round_factory(3);
         let v = vector([1.5, 9.547, 3.691]);
         let w = vector([-6.007, 0.124, 5.772]);
-        assert_eq!(round(v.area_of_triangle(w)), 42.565);
+        assert_eq!(round(v.area_of_triangle(&w)), 42.565);
     }
 }

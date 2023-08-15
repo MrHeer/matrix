@@ -2,12 +2,6 @@ use std::ops::{Add, Index, Sub};
 
 use crate::Vector;
 
-impl<const DIM: usize> PartialEq for Vector<DIM> {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 == other.0
-    }
-}
-
 impl<const DIM: usize> Add for Vector<DIM> {
     type Output = Vector<DIM>;
 

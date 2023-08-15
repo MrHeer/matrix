@@ -56,32 +56,36 @@ mod tests {
     #[test]
     fn fmt() {
         assert_eq!(
-            format!("{}", Line::new(Some(vector([8.3, 0.])), None)),
+            format!("{}", Line::new(vector([8.3, 0.]), 0.)),
             "8.3x_0 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([-5.4, 0.])), Some(3.))),
+            format!("{}", Line::new(vector([-5.4, 0.]), 3.)),
             "-5.4x_0 = 3"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([0., 2.9])), Some(2.3))),
+            format!("{}", Line::new(vector([0., 2.9]), 2.3)),
             "2.9x_1 = 2.3"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([0., -8.3])), None)),
+            format!("{}", Line::new(vector([0., -8.3]), 0.)),
             "-8.3x_1 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([-0.12, 2.3])), Some(5.4))),
+            format!("{}", Line::new(vector([-0.12, 2.3]), 5.4)),
             "-0.12x_0 + 2.3x_1 = 5.4"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([5.6, -8.3])), None)),
+            format!("{}", Line::new(vector([5.6, -8.3]), 0.)),
             "5.6x_0 - 8.3x_1 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(Some(vector([5.6, -1.0])), None)),
+            format!("{}", Line::new(vector([5.6, -1.0]), 0.)),
             "5.6x_0 - x_1 = 0"
+        );
+        assert_eq!(
+            format!("{:.2}", Line::new(vector([3.231, 0.]), 2.519)),
+            "3.23x_0 = 2.52"
         );
     }
 }
