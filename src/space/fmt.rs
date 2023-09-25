@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::math::{first_nonzero_index, is_zero, ne};
 
-use super::Line;
+use super::Space;
 
 fn write_coefficient(
     f: &mut std::fmt::Formatter<'_>,
@@ -28,7 +28,7 @@ fn write_coefficient(
     Ok(())
 }
 
-impl<const DIM: usize> Display for Line<DIM> {
+impl<const DIM: usize> Display for Space<DIM> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let normal_vector = self.normal_vector;
         match first_nonzero_index(normal_vector) {
@@ -51,40 +51,40 @@ impl<const DIM: usize> Display for Line<DIM> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{line::Line, vector};
+    use crate::{space::Space, vector};
 
     #[test]
     fn fmt() {
         assert_eq!(
-            format!("{}", Line::new(vector([8.3, 0.]), 0.)),
+            format!("{}", Space::new(vector([8.3, 0.]), 0.)),
             "8.3x_0 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([-5.4, 0.]), 3.)),
+            format!("{}", Space::new(vector([-5.4, 0.]), 3.)),
             "-5.4x_0 = 3"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([0., 2.9]), 2.3)),
+            format!("{}", Space::new(vector([0., 2.9]), 2.3)),
             "2.9x_1 = 2.3"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([0., -8.3]), 0.)),
+            format!("{}", Space::new(vector([0., -8.3]), 0.)),
             "-8.3x_1 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([-0.12, 2.3]), 5.4)),
+            format!("{}", Space::new(vector([-0.12, 2.3]), 5.4)),
             "-0.12x_0 + 2.3x_1 = 5.4"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([5.6, -8.3]), 0.)),
+            format!("{}", Space::new(vector([5.6, -8.3]), 0.)),
             "5.6x_0 - 8.3x_1 = 0"
         );
         assert_eq!(
-            format!("{}", Line::new(vector([5.6, -1.0]), 0.)),
+            format!("{}", Space::new(vector([5.6, -1.0]), 0.)),
             "5.6x_0 - x_1 = 0"
         );
         assert_eq!(
-            format!("{:.2}", Line::new(vector([3.231, 0.]), 2.519)),
+            format!("{:.2}", Space::new(vector([3.231, 0.]), 2.519)),
             "3.23x_0 = 2.52"
         );
     }

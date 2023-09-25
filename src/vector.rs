@@ -80,13 +80,13 @@ impl<const DIM: usize> Vector<DIM> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
         let dot_product = self_normalize.dot(&other_normalize);
-        let fixed_prodcut = match dot_product {
-            dot_product if dot_product < -1.0 => -1.0,
-            dot_product if dot_product > 1.0 => 1.0,
+        let fixed_product = match dot_product {
+            dot_product if eq(dot_product, -1.0) => -1.0,
+            dot_product if eq(dot_product, 1.0) => 1.0,
             dot_product => dot_product,
         };
 
-        Ok(fixed_prodcut.acos())
+        Ok(fixed_product.acos())
     }
 
     pub fn is_zero_with_tolerance(&self, tolerance: Option<f64>) -> bool {
@@ -318,7 +318,7 @@ mod tests {
     }
 
     #[test]
-    fn area_of_parallelogra() {
+    fn area_of_parallelogram() {
         let round = round_factory(3);
         let v = vector([-8.987, -9.838, 5.031]);
         let w = vector([-4.268, -1.861, -8.866]);
