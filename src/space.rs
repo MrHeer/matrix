@@ -3,7 +3,7 @@ mod ops;
 
 use crate::{math::first_nonzero_index, round::round_factory, vector, Vector};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Space<const DIM: usize> {
     pub(crate) normal_vector: Vector<DIM>,
     pub(crate) constant_term: f64,

@@ -1,10 +1,12 @@
 use crate::{space::Space, vector, Vector};
 
+pub type Line = Space<2>;
+
 #[derive(Debug, PartialEq)]
 pub enum Intersection {
     Some(Vector<2>),
     None,
-    Infinity,
+    Infinity(Line),
 }
 
 impl Intersection {
@@ -13,19 +15,17 @@ impl Intersection {
         match self {
             Some(val) => val,
             None => panic!("called `Intersection::unwrap()` on a `None` value"),
-            Infinity => panic!("called `Intersection::unwrap()` on a `Infinity` value"),
+            Infinity(_line) => panic!("called `Intersection::unwrap()` on a `Infinity` value"),
         }
     }
 }
-
-pub type Line = Space<2>;
 
 impl Line {
     pub fn intersect(&self, other: &Line) -> Intersection {
         use Intersection::*;
 
         if self == other {
-            return Infinity;
+            return Infinity(self.clone());
         }
 
         if self.is_parallel(other) {
@@ -58,7 +58,7 @@ mod tests {
 
         let line_1 = Space::new(vector([4.046, 2.836]), 1.21);
         let line_2 = Space::new(vector([10.115, 7.09]), 3.025);
-        assert_eq!(line_1.intersect(&line_2), Infinity);
+        assert_eq!(line_1.intersect(&line_2), Infinity(line_1));
 
         let line_1 = Space::new(vector([7.204, 3.182]), 8.68);
         let line_2 = Space::new(vector([8.172, 4.114]), 9.883);
