@@ -21,7 +21,7 @@ impl Intersection {
 }
 
 impl Line {
-    pub fn intersect(&self, other: &Line) -> Intersection {
+    pub fn intersect(&self, other: &Self) -> Intersection {
         use Intersection::*;
 
         if self == other {

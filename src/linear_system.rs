@@ -22,12 +22,7 @@ impl<const DIM: usize> LinearSystem<DIM> {
     }
 
     pub fn multiply_coefficient_and_row(&mut self, coefficient: f64, row: usize) {
-        let equation = self[row];
-        let new_equation = Equation::new(
-            equation.normal_vector.scale(coefficient),
-            equation.constant_term * coefficient,
-        );
-        self[row] = new_equation;
+        self[row] = self[row].scale(coefficient);
     }
 
     pub fn add_multiple_times_row_to_row(
@@ -38,14 +33,8 @@ impl<const DIM: usize> LinearSystem<DIM> {
     ) {
         let to_add_equation = self[row_to_add];
         let to_be_added_to_equation = self[row_to_be_added_to];
-        let multipled_to_add_equation = Equation::new(
-            to_add_equation.normal_vector.scale(coefficient),
-            to_add_equation.constant_term * coefficient,
-        );
-        self[row_to_be_added_to] = Equation::new(
-            multipled_to_add_equation.normal_vector + to_be_added_to_equation.normal_vector,
-            multipled_to_add_equation.constant_term + to_be_added_to_equation.constant_term,
-        );
+        let multipled_to_add_equation = to_add_equation.scale(coefficient);
+        self[row_to_be_added_to] = multipled_to_add_equation + to_be_added_to_equation
     }
 
     pub fn len(&self) -> usize {

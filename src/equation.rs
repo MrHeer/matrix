@@ -7,7 +7,7 @@ use crate::{math::first_nonzero_index, round::round_factory, vector, Vector};
 pub struct Equation<const DIM: usize> {
     pub(crate) normal_vector: Vector<DIM>,
     pub(crate) constant_term: f64,
-    pub(crate) base_point: Option<Vector<DIM>>,
+    base_point: Option<Vector<DIM>>,
 }
 
 impl<const DIM: usize> Equation<DIM> {
@@ -32,7 +32,7 @@ impl<const DIM: usize> Equation<DIM> {
         }
     }
 
-    pub fn round(&self, precision: usize) -> Equation<DIM> {
+    pub fn round(&self, precision: usize) -> Self {
         let round = &round_factory(precision);
         let base_point = match self.base_point {
             Some(base_point) => Some(base_point.map(round)),
@@ -45,8 +45,15 @@ impl<const DIM: usize> Equation<DIM> {
         }
     }
 
-    pub fn is_parallel(&self, other: &Equation<DIM>) -> bool {
+    pub fn is_parallel(&self, other: &Self) -> bool {
         self.normal_vector.is_parallel(&other.normal_vector)
+    }
+
+    pub fn scale(&self, scalar: f64) -> Self {
+        Self::new(
+            self.normal_vector.scale(scalar),
+            self.constant_term * scalar,
+        )
     }
 }
 
@@ -58,17 +65,17 @@ mod tests {
 
     #[test]
     fn new() {
-        let line = Equation::new(vector([0., 1.]), 3.);
-        assert_eq!(line.normal_vector, vector([0., 1.]));
-        assert_eq!(line.constant_term, 3.);
-        assert_eq!(line.base_point, Some(vector([0.0, 3.0])));
+        let equation = Equation::new(vector([0., 1.]), 3.);
+        assert_eq!(equation.normal_vector, vector([0., 1.]));
+        assert_eq!(equation.constant_term, 3.);
+        assert_eq!(equation.base_point, Some(vector([0.0, 3.0])));
     }
 
     #[test]
     fn round() {
-        let line = Equation::new(vector([0.3837, 1.3212]), 12.4837);
+        let equation = Equation::new(vector([0.3837, 1.3212]), 12.4837);
         assert_eq!(
-            line.round(3),
+            equation.round(3),
             Equation {
                 normal_vector: vector([0.384, 1.321]),
                 constant_term: 12.484,
@@ -101,5 +108,11 @@ mod tests {
         let planes_2 = Equation::new(vector([-2.642, 2.875, -2.404]), -2.443);
         assert_ne!(planes_1, planes_2);
         assert_eq!(planes_1.is_parallel(&planes_2), true);
+    }
+
+    #[test]
+    fn scale() {
+        let equation = Equation::new(vector([0., 1.]), 3.);
+        assert_eq!(equation.scale(2.), Equation::new(vector([0., 2.]), 6.));
     }
 }

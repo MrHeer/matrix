@@ -1,3 +1,5 @@
+use std::ops::{Add, Sub};
+
 use super::Equation;
 
 impl<const DIM: usize> PartialEq for Equation<DIM> {
@@ -10,6 +12,28 @@ impl<const DIM: usize> PartialEq for Equation<DIM> {
             }
             _ => false,
         }
+    }
+}
+
+impl<const DIM: usize> Add for Equation<DIM> {
+    type Output = Equation<DIM>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::new(
+            self.normal_vector + rhs.normal_vector,
+            self.constant_term + rhs.constant_term,
+        )
+    }
+}
+
+impl<const DIM: usize> Sub for Equation<DIM> {
+    type Output = Equation<DIM>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(
+            self.normal_vector - rhs.normal_vector,
+            self.constant_term - rhs.constant_term,
+        )
     }
 }
 
@@ -39,5 +63,24 @@ mod tests {
             Equation::new(vector([1., 2.]), 3.),
             Equation::new(vector([1., 2.]), 4.),
         );
+    }
+
+    #[test]
+    fn add() {
+        let equation_1 = Equation::new(vector([2., 3.]), 2.);
+        let equation_2 = Equation::new(vector([1., -1.]), -5.);
+
+        assert_eq!(
+            equation_1 + equation_2,
+            Equation::new(vector([3., 2.]), -3.)
+        )
+    }
+
+    #[test]
+    fn sub() {
+        let equation_1 = Equation::new(vector([2., 3.]), 2.);
+        let equation_2 = Equation::new(vector([1., -1.]), -5.);
+
+        assert_eq!(equation_1 - equation_2, Equation::new(vector([1., 4.]), 7.))
     }
 }

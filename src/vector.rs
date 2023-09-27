@@ -32,19 +32,19 @@ impl<const DIM: usize> Vector<DIM> {
         DIM
     }
 
-    pub fn map<F>(&self, f: F) -> Vector<DIM>
+    pub fn map<F>(&self, f: F) -> Self
     where
         F: FnMut(f64) -> f64,
     {
         self.into_iter().map(f).collect()
     }
 
-    pub fn round(&self, precision: usize) -> Vector<DIM> {
+    pub fn round(&self, precision: usize) -> Self {
         let round = round_factory(precision);
         self.map(round)
     }
 
-    pub fn scale(&self, scalar: f64) -> Vector<DIM> {
+    pub fn scale(&self, scalar: f64) -> Self {
         self.map(|x| x * scalar)
     }
 
@@ -56,7 +56,7 @@ impl<const DIM: usize> Vector<DIM> {
         sum.sqrt()
     }
 
-    pub fn normalize(&self) -> Result<Vector<DIM>, String> {
+    pub fn normalize(&self) -> Result<Self, String> {
         let magnitude = self.magnitude();
         if math::is_zero(magnitude) {
             return Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE));
@@ -64,7 +64,7 @@ impl<const DIM: usize> Vector<DIM> {
         Ok(self.scale(1. / magnitude))
     }
 
-    pub fn dot(&self, other: &Vector<DIM>) -> f64 {
+    pub fn dot(&self, other: &Self) -> f64 {
         let mut dot_product = 0.;
         self.into_iter()
             .enumerate()
@@ -73,7 +73,7 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     /// return the angle between the two vectors in radian.
-    pub fn angle(&self, other: &Vector<DIM>) -> Result<f64, String> {
+    pub fn angle(&self, other: &Self) -> Result<f64, String> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
         let dot_product = self_normalize.dot(&other_normalize);
@@ -94,7 +94,7 @@ impl<const DIM: usize> Vector<DIM> {
         self.is_zero_with_tolerance(None)
     }
 
-    pub fn is_parallel(&self, other: &Vector<DIM>) -> bool {
+    pub fn is_parallel(&self, other: &Self) -> bool {
         let angle = self.angle(other);
         match angle {
             Ok(rad) => math::is_zero(rad) || math::eq(rad, PI),
@@ -102,19 +102,15 @@ impl<const DIM: usize> Vector<DIM> {
         }
     }
 
-    pub fn is_orthogonal_with_tolerance(
-        &self,
-        other: &Vector<DIM>,
-        tolerance: Option<f64>,
-    ) -> bool {
+    pub fn is_orthogonal_with_tolerance(&self, other: &Self, tolerance: Option<f64>) -> bool {
         math::is_zero_with_tolerance(self.dot(other), tolerance)
     }
 
-    pub fn is_orthogonal(&self, other: &Vector<DIM>) -> bool {
+    pub fn is_orthogonal(&self, other: &Self) -> bool {
         self.is_orthogonal_with_tolerance(other, None)
     }
 
-    pub fn project(&self, basis: &Vector<DIM>) -> Result<Projection<DIM>, String> {
+    pub fn project(&self, basis: &Self) -> Result<Projection<DIM>, String> {
         let u = basis.normalize()?;
         let weight = self.dot(&u);
         let parallel = u.scale(weight);
@@ -127,18 +123,18 @@ impl<const DIM: usize> Vector<DIM> {
 }
 
 impl Vector<3> {
-    pub fn cross(&self, other: &Vector<3>) -> Vector<3> {
+    pub fn cross(&self, other: &Self) -> Self {
         let [x1, y1, z1] = self.0;
         let [x2, y2, z2] = other.0;
         vector([y1 * z2 - y2 * z1, -(x1 * z2 - x2 * z1), x1 * y2 - x2 * y1])
     }
 
-    pub fn area_of_parallelogram(&self, other: &Vector<3>) -> f64 {
+    pub fn area_of_parallelogram(&self, other: &Self) -> f64 {
         let cross_product = self.cross(other);
         cross_product.magnitude()
     }
 
-    pub fn area_of_triangle(&self, other: &Vector<3>) -> f64 {
+    pub fn area_of_triangle(&self, other: &Self) -> f64 {
         self.area_of_parallelogram(other) / 2.
     }
 }
