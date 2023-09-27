@@ -1,8 +1,10 @@
-pub mod equation;
+mod equation;
 pub mod line;
-pub mod linear_system;
+mod linear_system;
 pub mod math;
 pub mod round;
 mod vector;
 
+pub use equation::*;
+pub use linear_system::*;
 pub use vector::*;
