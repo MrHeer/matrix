@@ -49,14 +49,8 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
     }
 
     pub fn indices_of_first_nonzero_terms_in_each_row(&self) -> [Option<usize>; LEN] {
-        let mut indices = [None; LEN];
-
-        for (i, p) in self.0.into_iter().enumerate() {
-            let index = first_nonzero_index(p.normal_vector).map_or(None, |index| Some(index));
-            indices[i] = index;
-        }
-
-        return indices;
+        self.0
+            .map(|e| first_nonzero_index(e.normal_vector).map_or(None, |index| Some(index)))
     }
 
     pub fn compute_triangular_form(&self) -> Self {
