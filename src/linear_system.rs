@@ -33,15 +33,13 @@ impl<const DIM: usize> LinearSystem<DIM> {
         self.spaces.len()
     }
 
-    pub fn indices_of_first_nonzero_terms_in_each_row(self) -> Vec<Option<usize>> {
+    pub fn indices_of_first_nonzero_terms_in_each_row(&self) -> Vec<Option<usize>> {
         let num_equations = self.len();
         let mut indices = vec![None; num_equations];
 
-        for (i, p) in self.spaces.into_iter().enumerate() {
-            match first_nonzero_index(p.normal_vector) {
-                Ok(index) => indices[i] = Some(index),
-                Err(_) => continue,
-            }
+        for (i, p) in self.spaces.clone().into_iter().enumerate() {
+            let index = first_nonzero_index(p.normal_vector).map_or(None, |index| Some(index));
+            indices[i] = index;
         }
 
         return indices;
