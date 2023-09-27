@@ -1,7 +1,7 @@
 mod fmt;
 mod ops;
 
-use crate::{math::first_nonzero_index, space::Space};
+use crate::{equation::Equation, math::first_nonzero_index};
 
 const ALL_PLANES_MUST_BE_IN_SAME_DIM_MSG: &str =
     "All planes in the system should live in the same dimension";
@@ -9,25 +9,25 @@ const NO_SOLUTIONS_MSG: &str = "No solutions";
 const INF_SOLUTIONS_MSG: &str = "Infinitely many solutions";
 
 pub struct LinearSystem<const DIM: usize> {
-    spaces: Vec<Space<DIM>>,
+    equations: Vec<Equation<DIM>>,
 }
 
 impl<const DIM: usize> LinearSystem<DIM> {
-    pub fn new(spaces: Vec<Space<DIM>>) -> Self {
-        LinearSystem { spaces }
+    pub fn new(equations: Vec<Equation<DIM>>) -> Self {
+        LinearSystem { equations }
     }
 
     pub fn swap_rows(&mut self, row1: usize, row2: usize) {
-        self.spaces.swap(row1, row2);
+        self.equations.swap(row1, row2);
     }
 
     pub fn multiply_coefficient_and_row(&mut self, coefficient: f64, row: usize) {
-        let space = self[row];
-        let new_space = Space::new(
-            space.normal_vector.scale(coefficient),
-            space.constant_term * coefficient,
+        let equation = self[row];
+        let new_equation = Equation::new(
+            equation.normal_vector.scale(coefficient),
+            equation.constant_term * coefficient,
         );
-        self[row] = new_space;
+        self[row] = new_equation;
     }
 
     pub fn add_multiple_times_row_to_row(
@@ -36,27 +36,27 @@ impl<const DIM: usize> LinearSystem<DIM> {
         row_to_add: usize,
         row_to_be_added_to: usize,
     ) {
-        let to_add_space = self[row_to_add];
-        let to_be_added_to_space = self[row_to_be_added_to];
-        let multipled_to_add_space = Space::new(
-            to_add_space.normal_vector.scale(coefficient),
-            to_add_space.constant_term * coefficient,
+        let to_add_equation = self[row_to_add];
+        let to_be_added_to_equation = self[row_to_be_added_to];
+        let multipled_to_add_equation = Equation::new(
+            to_add_equation.normal_vector.scale(coefficient),
+            to_add_equation.constant_term * coefficient,
         );
-        self[row_to_be_added_to] = Space::new(
-            multipled_to_add_space.normal_vector + to_be_added_to_space.normal_vector,
-            multipled_to_add_space.constant_term + to_be_added_to_space.constant_term,
+        self[row_to_be_added_to] = Equation::new(
+            multipled_to_add_equation.normal_vector + to_be_added_to_equation.normal_vector,
+            multipled_to_add_equation.constant_term + to_be_added_to_equation.constant_term,
         );
     }
 
     pub fn len(&self) -> usize {
-        self.spaces.len()
+        self.equations.len()
     }
 
     pub fn indices_of_first_nonzero_terms_in_each_row(&self) -> Vec<Option<usize>> {
         let num_equations = self.len();
         let mut indices = vec![None; num_equations];
 
-        for (i, p) in self.spaces.clone().into_iter().enumerate() {
+        for (i, p) in self.equations.clone().into_iter().enumerate() {
             let index = first_nonzero_index(p.normal_vector).map_or(None, |index| Some(index));
             indices[i] = index;
         }
@@ -67,14 +67,14 @@ impl<const DIM: usize> LinearSystem<DIM> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{linear_system::LinearSystem, space::Space, vector};
+    use crate::{equation::Equation, linear_system::LinearSystem, vector};
 
     #[test]
     fn indices_of_first_nonzero_terms_in_each_row() {
-        let p0 = Space::new(vector([1., 1., 1.]), 1.);
-        let p1 = Space::new(vector([0., 1., 0.]), 2.);
-        let p2 = Space::new(vector([1., 1., -1.]), 3.);
-        let p3 = Space::new(vector([1., 0., -2.]), 2.);
+        let p0 = Equation::new(vector([1., 1., 1.]), 1.);
+        let p1 = Equation::new(vector([0., 1., 0.]), 2.);
+        let p2 = Equation::new(vector([1., 1., -1.]), 3.);
+        let p3 = Equation::new(vector([1., 0., -2.]), 2.);
 
         let s = LinearSystem::new(vec![p0, p1, p2, p3]);
         assert_eq!(
@@ -85,10 +85,10 @@ mod tests {
 
     #[test]
     fn operations() {
-        let p0 = Space::new(vector([1., 1., 1.]), 1.);
-        let p1 = Space::new(vector([0., 1., 0.]), 2.);
-        let p2 = Space::new(vector([1., 1., -1.]), 3.);
-        let p3 = Space::new(vector([1., 0., -2.]), 2.);
+        let p0 = Equation::new(vector([1., 1., 1.]), 1.);
+        let p1 = Equation::new(vector([0., 1., 0.]), 2.);
+        let p2 = Equation::new(vector([1., 1., -1.]), 3.);
+        let p3 = Equation::new(vector([1., 0., -2.]), 2.);
 
         let mut s = LinearSystem::new(vec![p0, p1, p2, p3]);
         s.swap_rows(0, 1);
@@ -107,7 +107,7 @@ mod tests {
         assert_eq!(
             s[0] == p1
                 && s[1] == p0
-                && s[2] == Space::new(vector([-1., -1., 1.]), -3.)
+                && s[2] == Equation::new(vector([-1., -1., 1.]), -3.)
                 && s[3] == p3,
             true
         );
@@ -115,8 +115,8 @@ mod tests {
         s.multiply_coefficient_and_row(10., 1);
         assert_eq!(
             s[0] == p1
-                && s[1] == Space::new(vector([10., 10., 10.]), 10.)
-                && s[2] == Space::new(vector([-1., -1., 1.]), -3.)
+                && s[1] == Equation::new(vector([10., 10., 10.]), 10.)
+                && s[2] == Equation::new(vector([-1., -1., 1.]), -3.)
                 && s[3] == p3,
             true
         );
@@ -124,8 +124,8 @@ mod tests {
         s.add_multiple_times_row_to_row(0., 0, 1);
         assert_eq!(
             s[0] == p1
-                && s[1] == Space::new(vector([10., 10., 10.]), 10.)
-                && s[2] == Space::new(vector([-1., -1., 1.]), -3.)
+                && s[1] == Equation::new(vector([10., 10., 10.]), 10.)
+                && s[2] == Equation::new(vector([-1., -1., 1.]), -3.)
                 && s[3] == p3,
             true
         );
@@ -133,17 +133,17 @@ mod tests {
         s.add_multiple_times_row_to_row(1., 0, 1);
         assert_eq!(
             s[0] == p1
-                && s[1] == Space::new(vector([10., 11., 10.]), 12.)
-                && s[2] == Space::new(vector([-1., -1., 1.]), -3.)
+                && s[1] == Equation::new(vector([10., 11., 10.]), 12.)
+                && s[2] == Equation::new(vector([-1., -1., 1.]), -3.)
                 && s[3] == p3,
             true
         );
 
         s.add_multiple_times_row_to_row(-1., 1, 0);
         assert_eq!(
-            s[0] == Space::new(vector([-10., -10., -10.]), -10.)
-                && s[1] == Space::new(vector([10., 11., 10.]), 12.)
-                && s[2] == Space::new(vector([-1., -1., 1.]), -3.)
+            s[0] == Equation::new(vector([-10., -10., -10.]), -10.)
+                && s[1] == Equation::new(vector([10., 11., 10.]), 12.)
+                && s[2] == Equation::new(vector([-1., -1., 1.]), -3.)
                 && s[3] == p3,
             true
         );

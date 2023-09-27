@@ -1,6 +1,6 @@
-use super::Space;
+use super::Equation;
 
-impl<const DIM: usize> PartialEq for Space<DIM> {
+impl<const DIM: usize> PartialEq for Equation<DIM> {
     fn eq(&self, other: &Self) -> bool {
         match (self.base_point, other.base_point) {
             (Some(self_basepoint), Some(other_basepoint)) => {
@@ -15,29 +15,29 @@ impl<const DIM: usize> PartialEq for Space<DIM> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{space::Space, vector};
+    use crate::{equation::Equation, vector};
 
     #[test]
     fn eq() {
         assert_eq!(
-            Space::new(vector([1., 2.]), 2.),
-            Space::new(vector([2., 4.]), 4.),
+            Equation::new(vector([1., 2.]), 2.),
+            Equation::new(vector([2., 4.]), 4.),
         );
     }
 
     #[test]
     fn ne() {
         assert_ne!(
-            Space::new(vector([0., 0.]), 0.),
-            Space::new(vector([0., 0.]), 0.)
+            Equation::new(vector([0., 0.]), 0.),
+            Equation::new(vector([0., 0.]), 0.)
         );
         assert_ne!(
-            Space::new(vector([1., 0.]), 0.),
-            Space::new(vector([0., 0.]), 0.)
+            Equation::new(vector([1., 0.]), 0.),
+            Equation::new(vector([0., 0.]), 0.)
         );
         assert_ne!(
-            Space::new(vector([1., 2.]), 3.),
-            Space::new(vector([1., 2.]), 4.),
+            Equation::new(vector([1., 2.]), 3.),
+            Equation::new(vector([1., 2.]), 4.),
         );
     }
 }

@@ -9,7 +9,7 @@ impl<const DIM: usize> Display for LinearSystem<DIM> {
         }
 
         writeln!(f, "Linear System:")?;
-        for (i, p) in self.spaces.clone().into_iter().enumerate() {
+        for (i, p) in self.equations.clone().into_iter().enumerate() {
             writeln!(f, "Equation {}: {}", i + 1, p)?;
         }
         Ok(())
@@ -18,14 +18,14 @@ impl<const DIM: usize> Display for LinearSystem<DIM> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{linear_system::LinearSystem, space::Space, vector};
+    use crate::{equation::Equation, linear_system::LinearSystem, vector};
 
     #[test]
     fn fmt() {
-        let p0 = Space::new(vector([1., 1., 1.]), 1.);
-        let p1 = Space::new(vector([0., 1., 0.]), 2.);
-        let p2 = Space::new(vector([1., 1., -1.]), 3.);
-        let p3 = Space::new(vector([1., 0., -2.]), 2.);
+        let p0 = Equation::new(vector([1., 1., 1.]), 1.);
+        let p1 = Equation::new(vector([0., 1., 0.]), 2.);
+        let p2 = Equation::new(vector([1., 1., -1.]), 3.);
+        let p3 = Equation::new(vector([1., 0., -2.]), 2.);
 
         let s = LinearSystem::new(vec![p0, p1, p2, p3]);
         assert_eq!(
