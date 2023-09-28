@@ -81,16 +81,25 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         false
     }
 
+    fn clear_coefficient(&mut self, row: usize, col: usize, target_row: usize) {
+        let beta = self.coefficient(row, col);
+        let gamma = self.coefficient(target_row, col);
+        let alpha = -gamma / beta;
+        self.add_multiple_times_row_to_row(alpha, row, target_row);
+    }
+
+    fn clear_coefficients_above(&mut self, row: usize, col: usize) {
+        (0..row).for_each(|current_row| {
+            self.clear_coefficient(row, col, current_row);
+        });
+    }
+
     fn clear_coefficients_below(&mut self, row: usize, col: usize) {
         let num_equations = LEN;
-        let beta = self.coefficient(row, col);
 
-        for current_row in row + 1..num_equations {
-            let normal_vector = self[current_row].normal_vector;
-            let gamma = normal_vector[col];
-            let alpha = -gamma / beta;
-            self.add_multiple_times_row_to_row(alpha, row, current_row);
-        }
+        (row + 1..num_equations).for_each(|current_row| {
+            self.clear_coefficient(row, col, current_row);
+        });
     }
 
     fn compute_triangular_form(&self) -> Self {
@@ -99,7 +108,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         let num_variables = DIM;
 
         let mut col = 0;
-        for row in 0..num_equations - 1 {
+        (0..num_equations).for_each(|row| {
             while col < num_variables {
                 let coefficient = system.coefficient(row, col);
                 if is_zero(coefficient) {
@@ -114,8 +123,34 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
                 col += 1;
                 break;
             }
-        }
+        });
+
         system
+    }
+
+    fn scale_row_to_make_cofficient_equal_one(&mut self, row: usize, col: usize) {
+        let coefficient = self.coefficient(row, col);
+        self.multiply_coefficient_and_row(1. / coefficient, row)
+    }
+
+    // Reduced Row-Echelon Form
+    fn compute_rref(&self) -> Self {
+        let mut tf = self.compute_triangular_form();
+        let num_equations = LEN;
+        let pivot_indices = tf.indices_of_first_nonzero_terms_in_each_row();
+
+        (0..num_equations).rev().for_each(|row| {
+            let col = pivot_indices[row];
+            match col {
+                Some(col) => {
+                    tf.scale_row_to_make_cofficient_equal_one(row, col);
+                    tf.clear_coefficients_above(row, col);
+                }
+                None => (),
+            }
+        });
+
+        tf
     }
 }
 
@@ -241,6 +276,53 @@ mod tests {
             t[0] == equation(vector([1., -1., 1.]), 2.)
                 && t[1] == equation(vector([0., 1., 1.]), 1.)
                 && t[2] == equation(vector([0., 0., -9.]), -2.),
+            true
+        );
+    }
+
+    #[test]
+    fn compute_rref() {
+        let e1 = equation(vector([1., 1., 1.]), 1.);
+        let e2 = equation(vector([0., 1., 1.]), 2.);
+        let s = linear_system([e1, e2]);
+        let r = s.compute_rref();
+        assert_eq!(
+            r[0] == equation(vector([1., 0., 0.]), -1.) && r[1] == e2,
+            true
+        );
+
+        let e1 = equation(vector([1., 1., 1.]), 1.);
+        let e2 = equation(vector([1., 1., 1.]), 2.);
+        let s = linear_system([e1, e2]);
+        let r = s.compute_rref();
+        assert_eq!(
+            r[0] == e1 && r[1] == equation(vector([0., 0., 0.]), 1.),
+            true
+        );
+
+        let e1 = equation(vector([1., 1., 1.]), 1.);
+        let e2 = equation(vector([0., 1., 0.]), 2.);
+        let e3 = equation(vector([1., 1., -1.]), 3.);
+        let e4 = equation(vector([1., 0., -2.]), 2.);
+        let s = linear_system([e1, e2, e3, e4]);
+        let r = s.compute_rref();
+        assert_eq!(
+            r[0] == equation(vector([1., 0., 0.]), 0.)
+                && r[1] == e2
+                && r[2] == equation(vector([0., 0., -2.]), 2.)
+                && r[3] == equation(vector([0., 0., 0.]), 0.),
+            true
+        );
+
+        let e1 = equation(vector([0., 1., 1.]), 1.);
+        let e2 = equation(vector([1., -1., 1.]), 2.);
+        let e3 = equation(vector([1., 2., -5.]), 3.);
+        let s = linear_system([e1, e2, e3]);
+        let r = s.compute_rref();
+        assert_eq!(
+            r[0] == equation(vector([1., 0., 0.]), 23. / 9.)
+                && r[1] == equation(vector([0., 1., 0.]), 7. / 9.)
+                && r[2] == equation(vector([0., 0., 1.]), 2. / 9.),
             true
         );
     }
