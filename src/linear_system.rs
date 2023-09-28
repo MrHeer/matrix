@@ -1,12 +1,15 @@
 mod fmt;
 mod ops;
 
-use crate::{equation::Equation, math::first_nonzero_index};
+use crate::{
+    equation::Equation,
+    math::{first_nonzero_index, is_zero},
+};
 
-const ALL_PLANES_MUST_BE_IN_SAME_DIM_MSG: &str =
-    "All planes in the system should live in the same dimension";
-const NO_SOLUTIONS_MSG: &str = "No solutions";
-const INF_SOLUTIONS_MSG: &str = "Infinitely many solutions";
+// const ALL_PLANES_MUST_BE_IN_SAME_DIM_MSG: &str =
+//     "All planes in the system should live in the same dimension";
+// const NO_SOLUTIONS_MSG: &str = "No solutions";
+// const INF_SOLUTIONS_MSG: &str = "Infinitely many solutions";
 
 #[derive(Clone)]
 pub struct LinearSystem<const DIM: usize, const LEN: usize>([Equation<DIM>; LEN]);
@@ -24,15 +27,19 @@ pub fn linear_system<const DIM: usize, const LEN: usize>(
 }
 
 impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
-    pub fn swap_rows(&mut self, row1: usize, row2: usize) {
+    fn coefficient(&self, row: usize, col: usize) -> f64 {
+        self[row].normal_vector[col]
+    }
+
+    fn swap_rows(&mut self, row1: usize, row2: usize) {
         self.0.swap(row1, row2);
     }
 
-    pub fn multiply_coefficient_and_row(&mut self, coefficient: f64, row: usize) {
+    fn multiply_coefficient_and_row(&mut self, coefficient: f64, row: usize) {
         self[row] = self[row].scale(coefficient);
     }
 
-    pub fn add_multiple_times_row_to_row(
+    fn add_multiple_times_row_to_row(
         &mut self,
         coefficient: f64,
         row_to_add: usize,
@@ -48,14 +55,66 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         LEN
     }
 
-    pub fn indices_of_first_nonzero_terms_in_each_row(&self) -> [Option<usize>; LEN] {
+    pub fn dim(&self) -> usize {
+        DIM
+    }
+
+    fn indices_of_first_nonzero_terms_in_each_row(&self) -> [Option<usize>; LEN] {
         self.0
             .map(|e| first_nonzero_index(e.normal_vector).map_or(None, |index| Some(index)))
     }
 
-    pub fn compute_triangular_form(&self) -> Self {
-        let system = self.clone();
+    fn swap_with_row_below_for_nonzero_coefficient_if_able(
+        &mut self,
+        row: usize,
+        col: usize,
+    ) -> bool {
+        let num_equations = LEN;
 
+        for current_row in row + 1..num_equations {
+            let coefficient = self.coefficient(current_row, col);
+            if is_zero(coefficient) == false {
+                self.swap_rows(row, current_row);
+                return true;
+            }
+        }
+        false
+    }
+
+    fn clear_coefficients_below(&mut self, row: usize, col: usize) {
+        let num_equations = LEN;
+        let beta = self.coefficient(row, col);
+
+        for current_row in row + 1..num_equations {
+            let normal_vector = self[current_row].normal_vector;
+            let gamma = normal_vector[col];
+            let alpha = -gamma / beta;
+            self.add_multiple_times_row_to_row(alpha, row, current_row);
+        }
+    }
+
+    fn compute_triangular_form(&self) -> Self {
+        let mut system = self.clone();
+        let num_equations = LEN;
+        let num_variables = DIM;
+
+        let mut col = 0;
+        for row in 0..num_equations - 1 {
+            while col < num_variables {
+                let coefficient = system.coefficient(row, col);
+                if is_zero(coefficient) {
+                    let swap_succeeded =
+                        system.swap_with_row_below_for_nonzero_coefficient_if_able(row, col);
+                    if swap_succeeded == false {
+                        col += 1;
+                        continue;
+                    }
+                }
+                system.clear_coefficients_below(row, col);
+                col += 1;
+                break;
+            }
+        }
         system
     }
 }
@@ -153,6 +212,7 @@ mod tests {
         let e2 = equation(vector([1., 1., 1.]), 2.);
         let s = linear_system([e1, e2]);
         let t = s.compute_triangular_form();
+        println!("{}, {}", t[1].normal_vector, t[1].constant_term);
         assert_eq!(
             t[0] == e1 && t[1] == equation(vector([0., 0., 0.]), 1.),
             true

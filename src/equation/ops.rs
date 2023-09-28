@@ -1,6 +1,6 @@
 use std::ops::{Add, Sub};
 
-use crate::equation;
+use crate::{equation, math::eq};
 
 use super::Equation;
 
@@ -12,6 +12,7 @@ impl<const DIM: usize> PartialEq for Equation<DIM> {
                 connect_vector.is_orthogonal(&self.normal_vector)
                     && connect_vector.is_orthogonal(&other.normal_vector)
             }
+            (None, None) => eq(self.constant_term, other.constant_term),
             _ => false,
         }
     }
@@ -49,14 +50,14 @@ mod tests {
             equation(vector([1., 2.]), 2.),
             equation(vector([2., 4.]), 4.),
         );
+        assert_eq!(
+            equation(vector([0., 0.]), 0.),
+            equation(vector([0., 0.]), 0.)
+        );
     }
 
     #[test]
     fn ne() {
-        assert_ne!(
-            equation(vector([0., 0.]), 0.),
-            equation(vector([0., 0.]), 0.)
-        );
         assert_ne!(
             equation(vector([1., 0.]), 0.),
             equation(vector([0., 0.]), 0.)
