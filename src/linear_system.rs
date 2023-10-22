@@ -4,12 +4,18 @@ mod ops;
 use crate::{
     equation::Equation,
     math::{first_nonzero_index, is_zero},
+    vector, Vector,
 };
 
-// const ALL_PLANES_MUST_BE_IN_SAME_DIM_MSG: &str =
-//     "All planes in the system should live in the same dimension";
-// const NO_SOLUTIONS_MSG: &str = "No solutions";
-// const INF_SOLUTIONS_MSG: &str = "Infinitely many solutions";
+const NO_SOLUTIONS_MSG: &str = "No solutions";
+const INF_SOLUTIONS_MSG: &str = "Infinitely many solutions";
+
+#[derive(Debug, PartialEq)]
+pub enum Solution<const DIM: usize> {
+    Some(Vector<DIM>),
+    None(String),
+    Infinity(String),
+}
 
 #[derive(Clone)]
 pub struct LinearSystem<const DIM: usize, const LEN: usize>([Equation<DIM>; LEN]);
@@ -47,8 +53,8 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
     ) {
         let to_add_equation = self[row_to_add];
         let to_be_added_to_equation = self[row_to_be_added_to];
-        let multipled_to_add_equation = to_add_equation.scale(coefficient);
-        self[row_to_be_added_to] = multipled_to_add_equation + to_be_added_to_equation
+        let multiplied_to_add_equation = to_add_equation.scale(coefficient);
+        self[row_to_be_added_to] = multiplied_to_add_equation + to_be_added_to_equation
     }
 
     pub fn len(&self) -> usize {
@@ -128,7 +134,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         system
     }
 
-    fn scale_row_to_make_cofficient_equal_one(&mut self, row: usize, col: usize) {
+    fn scale_row_to_make_coefficient_equal_one(&mut self, row: usize, col: usize) {
         let coefficient = self.coefficient(row, col);
         self.multiply_coefficient_and_row(1. / coefficient, row)
     }
@@ -143,7 +149,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
             let col = pivot_indices[row];
             match col {
                 Some(col) => {
-                    tf.scale_row_to_make_cofficient_equal_one(row, col);
+                    tf.scale_row_to_make_coefficient_equal_one(row, col);
                     tf.clear_coefficients_above(row, col);
                 }
                 None => (),
@@ -152,11 +158,61 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
 
         tf
     }
+
+    pub fn compute_solution(&self) -> Solution<DIM> {
+        let rref = self.compute_rref();
+
+        if let Some(s) = rref.raise_exception_if_contradictory_equation() {
+            return s;
+        }
+
+        if let Some(s) = rref.raise_exception_if_too_few_pivots() {
+            return s;
+        }
+
+        let mut arr = [0.; DIM];
+        (0..DIM).for_each(|i| arr[i] = rref.0[i].constant_term);
+        Solution::Some(vector(arr))
+    }
+
+    fn raise_exception_if_contradictory_equation(&self) -> Option<Solution<DIM>> {
+        for equation in self.0 {
+            if first_nonzero_index(equation.normal_vector).is_err() {
+                let constant_term = equation.constant_term;
+                if is_zero(constant_term) == false {
+                    return Some(Solution::None(String::from(NO_SOLUTIONS_MSG)));
+                }
+            }
+        }
+
+        None
+    }
+
+    fn raise_exception_if_too_few_pivots(&self) -> Option<Solution<DIM>> {
+        let pivot_indices = self.indices_of_first_nonzero_terms_in_each_row();
+        let num_pivots = {
+            pivot_indices.into_iter().fold(0, |sum, index| match index {
+                Some(_) => sum + 1,
+                None => sum,
+            })
+        } as usize;
+        let num_variables = DIM;
+
+        if num_pivots < num_variables {
+            return Some(Solution::Infinity(String::from(INF_SOLUTIONS_MSG)));
+        }
+
+        None
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{equation, linear_system, vector};
+    use crate::{
+        equation,
+        linear_system::{linear_system, Solution, INF_SOLUTIONS_MSG, NO_SOLUTIONS_MSG},
+        vector,
+    };
 
     #[test]
     fn indices_of_first_nonzero_terms_in_each_row() {
@@ -325,5 +381,36 @@ mod tests {
                 && r[2] == equation(vector([0., 0., 1.]), 2. / 9.),
             true
         );
+    }
+
+    #[test]
+    fn compute_solution() {
+        let e1 = equation(vector([5.862, 1.178, -10.366]), -8.15);
+        let e2 = equation(vector([-2.931, -0.589, 5.183]), -4.075);
+        let s = linear_system([e1, e2]);
+        let solution = s.compute_solution();
+        assert_eq!(solution, Solution::None(String::from(NO_SOLUTIONS_MSG)));
+
+        let e1 = equation(vector([8.631, 5.112, -1.816]), -5.113);
+        let e2 = equation(vector([4.315, 11.132, -5.27]), -6.775);
+        let e3 = equation(vector([-2.158, 3.01, -1.727]), -0.831);
+        let s = linear_system([e1, e2, e3]);
+        let solution = s.compute_solution();
+        assert_eq!(
+            solution,
+            Solution::Infinity(String::from(INF_SOLUTIONS_MSG))
+        );
+
+        let e1 = equation(vector([5.262, 2.739, -9.878]), -3.441);
+        let e2 = equation(vector([5.111, 6.358, 7.638]), -2.152);
+        let e3 = equation(vector([2.016, -9.924, -1.367]), -9.278);
+        let e4 = equation(vector([2.167, -13.543, -18.883]), -10.567);
+        let s = linear_system([e1, e2, e3, e4]);
+        if let Solution::Some(vec) = s.compute_solution() {
+            assert_eq!(
+                Solution::Some(vec.round(3)),
+                Solution::Some(vector([-1.177, 0.707, -0.083]))
+            );
+        }
     }
 }
