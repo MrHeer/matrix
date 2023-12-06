@@ -49,11 +49,7 @@ impl<const DIM: usize> Vector<DIM> {
     }
 
     pub fn magnitude(&self) -> f64 {
-        let mut sum = 0.;
-        self.into_iter().for_each(|x| {
-            sum += x.powi(2);
-        });
-        sum.sqrt()
+        self.into_iter().map(|x| x.powi(2)).sum::<f64>().sqrt()
     }
 
     pub fn normalize(&self) -> Result<Self, String> {

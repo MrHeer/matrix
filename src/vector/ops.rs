@@ -9,7 +9,7 @@ impl<const DIM: usize> Add for Vector<DIM> {
         self.into_iter()
             .enumerate()
             .map(|(index, _)| self[index] + rhs[index])
-            .collect::<Vector<DIM>>()
+            .collect()
     }
 }
 
@@ -20,7 +20,7 @@ impl<const DIM: usize> Sub for Vector<DIM> {
         self.into_iter()
             .enumerate()
             .map(|(index, _)| self[index] - rhs[index])
-            .collect::<Vector<DIM>>()
+            .collect()
     }
 }
 
