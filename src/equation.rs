@@ -38,10 +38,7 @@ impl<const DIM: usize> Equation<DIM> {
 
     pub fn round(&self, precision: usize) -> Self {
         let round = &round_factory(precision);
-        let base_point = match self.base_point {
-            Some(base_point) => Some(base_point.map(round)),
-            None => None,
-        };
+        let base_point = self.base_point.map(|base_point| base_point.map(round));
         Equation {
             normal_vector: self.normal_vector.map(round),
             constant_term: round(self.constant_term),
@@ -93,26 +90,26 @@ mod tests {
     fn is_parallel() {
         let line_1 = equation(vector([0., 1.]), 3.);
         let line_2 = equation(vector([0., 2.]), 6.);
-        assert_eq!(line_1.is_parallel(&line_2), true);
+        assert!(line_1.is_parallel(&line_2));
 
         let line_1 = equation(vector([2., 1.]), 3.);
         let line_2 = equation(vector([1., 2.]), 3.);
-        assert_eq!(line_1.is_parallel(&line_2), false);
+        assert!(!line_1.is_parallel(&line_2));
 
         let planes_1 = equation(vector([-0.412, 3.806, 0.728]), -3.46);
         let planes_2 = equation(vector([1.03, -9.515, -1.82]), 8.65);
         assert_eq!(planes_1, planes_2);
-        assert_eq!(planes_1.is_parallel(&planes_2), true);
+        assert!(planes_1.is_parallel(&planes_2));
 
         let planes_1 = equation(vector([2.611, 5.518, 0.283]), 4.6);
         let planes_2 = equation(vector([7.715, 8.306, 5.342]), 3.76);
         assert_ne!(planes_1, planes_2);
-        assert_eq!(planes_1.is_parallel(&planes_2), false);
+        assert!(!planes_1.is_parallel(&planes_2));
 
         let planes_1 = equation(vector([-7.926, 8.625, -7.212]), -7.952);
         let planes_2 = equation(vector([-2.642, 2.875, -2.404]), -2.443);
         assert_ne!(planes_1, planes_2);
-        assert_eq!(planes_1.is_parallel(&planes_2), true);
+        assert!(planes_1.is_parallel(&planes_2));
     }
 
     #[test]

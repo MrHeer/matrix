@@ -135,6 +135,7 @@ impl Vector<3> {
     }
 }
 
+#[allow(clippy::approx_constant)]
 #[cfg(test)]
 mod tests {
     use super::ZERO_VECTOR_HAS_NO_NORMALIZE;
@@ -240,28 +241,28 @@ mod tests {
     fn checks() {
         let v = vector([0., 0.]);
         let w = vector([-0.1, 0.001]);
-        assert_eq!(v.is_zero(), true);
-        assert_eq!(w.is_zero(), false);
+        assert!(v.is_zero());
+        assert!(!w.is_zero());
 
         let v = vector([-7.579, -7.88]);
         let w = vector([22.737, 23.64]);
-        assert_eq!(v.is_parallel(&w), true);
-        assert_eq!(v.is_orthogonal(&w), false);
+        assert!(v.is_parallel(&w));
+        assert!(!v.is_orthogonal(&w));
 
         let v = vector([-2.029, 9.97, 4.172]);
         let w = vector([-9.231, -6.639, -7.245]);
-        assert_eq!(v.is_parallel(&w), false);
-        assert_eq!(v.is_orthogonal(&w), false);
+        assert!(!v.is_parallel(&w));
+        assert!(!v.is_orthogonal(&w));
 
         let v = vector([-2.328, -7.284, -1.214]);
         let w = vector([-1.821, 1.072, -2.94]);
-        assert_eq!(v.is_parallel(&w), false);
-        assert_eq!(v.is_orthogonal(&w), true);
+        assert!(!v.is_parallel(&w));
+        assert!(v.is_orthogonal(&w));
 
         let v = vector([2.118, 4.827]);
         let w = vector([0., 0.]);
-        assert_eq!(v.is_parallel(&w), true);
-        assert_eq!(v.is_orthogonal(&w), true);
+        assert!(v.is_parallel(&w));
+        assert!(v.is_orthogonal(&w));
     }
 
     #[test]
@@ -298,8 +299,8 @@ mod tests {
         let w = vector([-1., 0., 3.]);
         let c = v.cross(&w);
         assert_eq!(c.round(3), vector([9., -13., 3.]));
-        assert_eq!(v.is_orthogonal(&c), true);
-        assert_eq!(w.is_orthogonal(&c), true);
+        assert!(v.is_orthogonal(&c));
+        assert!(w.is_orthogonal(&c));
 
         let v = vector([8.462, 7.893, -8.187]);
         let w = vector([6.984, -5.975, 4.778]);

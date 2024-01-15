@@ -61,13 +61,16 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         LEN
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn dim(&self) -> usize {
         DIM
     }
 
     fn indices_of_first_nonzero_terms_in_each_row(&self) -> [Option<usize>; LEN] {
-        self.0
-            .map(|e| first_nonzero_index(e.normal_vector).map_or(None, |index| Some(index)))
+        self.0.map(|e| first_nonzero_index(e.normal_vector).ok())
     }
 
     fn swap_with_row_below_for_nonzero_coefficient_if_able(
@@ -79,7 +82,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
 
         for current_row in row + 1..num_equations {
             let coefficient = self.coefficient(current_row, col);
-            if is_zero(coefficient) == false {
+            if !is_zero(coefficient) {
                 self.swap_rows(row, current_row);
                 return true;
             }
@@ -120,7 +123,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
                 if is_zero(coefficient) {
                     let swap_succeeded =
                         system.swap_with_row_below_for_nonzero_coefficient_if_able(row, col);
-                    if swap_succeeded == false {
+                    if !swap_succeeded {
                         col += 1;
                         continue;
                     }
@@ -147,12 +150,9 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
 
         (0..num_equations).rev().for_each(|row| {
             let col = pivot_indices[row];
-            match col {
-                Some(col) => {
-                    tf.scale_row_to_make_coefficient_equal_one(row, col);
-                    tf.clear_coefficients_above(row, col);
-                }
-                None => (),
+            if let Some(col) = col {
+                tf.scale_row_to_make_coefficient_equal_one(row, col);
+                tf.clear_coefficients_above(row, col);
             }
         });
 
@@ -179,7 +179,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
         for equation in self.0 {
             if first_nonzero_index(equation.normal_vector).is_err() {
                 let constant_term = equation.constant_term;
-                if is_zero(constant_term) == false {
+                if !is_zero(constant_term) {
                     return Some(Solution::None(String::from(NO_SOLUTIONS_MSG)));
                 }
             }
@@ -237,57 +237,52 @@ mod tests {
 
         let mut s = linear_system([e0, e1, e2, e3]);
         s.swap_rows(0, 1);
-        assert_eq!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3, true);
+        assert!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3);
 
         s.swap_rows(1, 3);
-        assert_eq!(s[0] == e1 && s[1] == e3 && s[2] == e2 && s[3] == e0, true);
+        assert!(s[0] == e1 && s[1] == e3 && s[2] == e2 && s[3] == e0);
 
         s.swap_rows(3, 1);
-        assert_eq!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3, true);
+        assert!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3);
 
         s.multiply_coefficient_and_row(1., 0);
-        assert_eq!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3, true);
+        assert!(s[0] == e1 && s[1] == e0 && s[2] == e2 && s[3] == e3);
 
         s.multiply_coefficient_and_row(-1., 2);
-        assert_eq!(
-            s[0] == e1 && s[1] == e0 && s[2] == equation(vector([-1., -1., 1.]), -3.) && s[3] == e3,
-            true
+        assert!(
+            s[0] == e1 && s[1] == e0 && s[2] == equation(vector([-1., -1., 1.]), -3.) && s[3] == e3
         );
 
         s.multiply_coefficient_and_row(10., 1);
-        assert_eq!(
+        assert!(
             s[0] == e1
                 && s[1] == equation(vector([10., 10., 10.]), 10.)
                 && s[2] == equation(vector([-1., -1., 1.]), -3.)
-                && s[3] == e3,
-            true
+                && s[3] == e3
         );
 
         s.add_multiple_times_row_to_row(0., 0, 1);
-        assert_eq!(
+        assert!(
             s[0] == e1
                 && s[1] == equation(vector([10., 10., 10.]), 10.)
                 && s[2] == equation(vector([-1., -1., 1.]), -3.)
-                && s[3] == e3,
-            true
+                && s[3] == e3
         );
 
         s.add_multiple_times_row_to_row(1., 0, 1);
-        assert_eq!(
+        assert!(
             s[0] == e1
                 && s[1] == equation(vector([10., 11., 10.]), 12.)
                 && s[2] == equation(vector([-1., -1., 1.]), -3.)
-                && s[3] == e3,
-            true
+                && s[3] == e3
         );
 
         s.add_multiple_times_row_to_row(-1., 1, 0);
-        assert_eq!(
+        assert!(
             s[0] == equation(vector([-10., -10., -10.]), -10.)
                 && s[1] == equation(vector([10., 11., 10.]), 12.)
                 && s[2] == equation(vector([-1., -1., 1.]), -3.)
-                && s[3] == e3,
-            true
+                && s[3] == e3
         );
     }
 
@@ -297,17 +292,14 @@ mod tests {
         let e2 = equation(vector([0., 1., 1.]), 2.);
         let s = linear_system([e1, e2]);
         let t = s.compute_triangular_form();
-        assert_eq!(t[0] == e1 && t[1] == e2, true);
+        assert!(t[0] == e1 && t[1] == e2);
 
         let e1 = equation(vector([1., 1., 1.]), 1.);
         let e2 = equation(vector([1., 1., 1.]), 2.);
         let s = linear_system([e1, e2]);
         let t = s.compute_triangular_form();
         println!("{}, {}", t[1].normal_vector, t[1].constant_term);
-        assert_eq!(
-            t[0] == e1 && t[1] == equation(vector([0., 0., 0.]), 1.),
-            true
-        );
+        assert!(t[0] == e1 && t[1] == equation(vector([0., 0., 0.]), 1.));
 
         let e1 = equation(vector([1., 1., 1.]), 1.);
         let e2 = equation(vector([0., 1., 0.]), 2.);
@@ -315,12 +307,11 @@ mod tests {
         let e4 = equation(vector([1., 0., -2.]), 2.);
         let s = linear_system([e1, e2, e3, e4]);
         let t = s.compute_triangular_form();
-        assert_eq!(
+        assert!(
             t[0] == e1
                 && t[1] == e2
                 && t[2] == equation(vector([0., 0., -2.]), 2.)
-                && t[3] == equation(vector([0., 0., 0.]), 0.),
-            true
+                && t[3] == equation(vector([0., 0., 0.]), 0.)
         );
 
         let e1 = equation(vector([0., 1., 1.]), 1.);
@@ -328,11 +319,10 @@ mod tests {
         let e3 = equation(vector([1., 2., -5.]), 3.);
         let s = linear_system([e1, e2, e3]);
         let t = s.compute_triangular_form();
-        assert_eq!(
+        assert!(
             t[0] == equation(vector([1., -1., 1.]), 2.)
                 && t[1] == equation(vector([0., 1., 1.]), 1.)
-                && t[2] == equation(vector([0., 0., -9.]), -2.),
-            true
+                && t[2] == equation(vector([0., 0., -9.]), -2.)
         );
     }
 
@@ -342,19 +332,13 @@ mod tests {
         let e2 = equation(vector([0., 1., 1.]), 2.);
         let s = linear_system([e1, e2]);
         let r = s.compute_rref();
-        assert_eq!(
-            r[0] == equation(vector([1., 0., 0.]), -1.) && r[1] == e2,
-            true
-        );
+        assert!(r[0] == equation(vector([1., 0., 0.]), -1.) && r[1] == e2);
 
         let e1 = equation(vector([1., 1., 1.]), 1.);
         let e2 = equation(vector([1., 1., 1.]), 2.);
         let s = linear_system([e1, e2]);
         let r = s.compute_rref();
-        assert_eq!(
-            r[0] == e1 && r[1] == equation(vector([0., 0., 0.]), 1.),
-            true
-        );
+        assert!(r[0] == e1 && r[1] == equation(vector([0., 0., 0.]), 1.));
 
         let e1 = equation(vector([1., 1., 1.]), 1.);
         let e2 = equation(vector([0., 1., 0.]), 2.);
@@ -362,12 +346,11 @@ mod tests {
         let e4 = equation(vector([1., 0., -2.]), 2.);
         let s = linear_system([e1, e2, e3, e4]);
         let r = s.compute_rref();
-        assert_eq!(
+        assert!(
             r[0] == equation(vector([1., 0., 0.]), 0.)
                 && r[1] == e2
                 && r[2] == equation(vector([0., 0., -2.]), 2.)
-                && r[3] == equation(vector([0., 0., 0.]), 0.),
-            true
+                && r[3] == equation(vector([0., 0., 0.]), 0.)
         );
 
         let e1 = equation(vector([0., 1., 1.]), 1.);
@@ -375,11 +358,10 @@ mod tests {
         let e3 = equation(vector([1., 2., -5.]), 3.);
         let s = linear_system([e1, e2, e3]);
         let r = s.compute_rref();
-        assert_eq!(
+        assert!(
             r[0] == equation(vector([1., 0., 0.]), 23. / 9.)
                 && r[1] == equation(vector([0., 1., 0.]), 7. / 9.)
-                && r[2] == equation(vector([0., 0., 1.]), 2. / 9.),
-            true
+                && r[2] == equation(vector([0., 0., 1.]), 2. / 9.)
         );
     }
 

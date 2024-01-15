@@ -25,7 +25,7 @@ impl Line {
         use Intersection::*;
 
         if self == other {
-            return Infinity(self.clone());
+            return Infinity(*self);
         }
 
         if self.is_parallel(other) {

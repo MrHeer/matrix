@@ -61,25 +61,25 @@ mod tests {
 
     #[test]
     fn eq_case() {
-        assert_eq!(eq(0., 0.), true);
-        assert_eq!(eq(0.1, 0.3), false);
-        assert_eq!(eq_with_tolerance(0.23, 0.24, Some(0.01)), true);
+        assert!(eq(0., 0.));
+        assert!(!eq(0.1, 0.3));
+        assert!(eq_with_tolerance(0.23, 0.24, Some(0.01)));
     }
 
     #[test]
     fn ne_case() {
-        assert_ne!(ne(0., 0.), true);
-        assert_ne!(ne(0.1, 0.3), false);
-        assert_ne!(ne_with_tolerance(0.23, 0.24, Some(0.01)), true);
+        assert!(!ne(0., 0.));
+        assert!(ne(0.1, 0.3));
+        assert!(!ne_with_tolerance(0.23, 0.24, Some(0.01)));
     }
 
     #[test]
     fn is_zero_case() {
-        assert_eq!(is_zero(0.), true);
-        assert_eq!(is_zero(0.1), false);
-        assert_eq!(is_zero(1e-10), false);
-        assert_eq!(is_zero(1e-11), true);
-        assert_eq!(is_zero_with_tolerance(0.01, Some(0.1)), true);
+        assert!(is_zero(0.));
+        assert!(!is_zero(0.1));
+        assert!(!is_zero(1e-10));
+        assert!(is_zero(1e-11));
+        assert!(is_zero_with_tolerance(0.01, Some(0.1)));
     }
 
     #[test]

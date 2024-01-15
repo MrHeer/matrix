@@ -4,7 +4,7 @@ use super::LinearSystem;
 
 impl<const DIM: usize, const LEN: usize> Display for LinearSystem<DIM, LEN> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.len() == 0 {
+        if self.is_empty() {
             return write!(f, "No Equation");
         }
 
