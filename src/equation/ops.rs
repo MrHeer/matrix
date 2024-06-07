@@ -1,4 +1,4 @@
-use std::ops::{Add, Sub};
+use std::ops::{Add, Mul, Sub};
 
 use crate::{equation, math::eq};
 
@@ -19,7 +19,7 @@ impl<const DIM: usize> PartialEq for Equation<DIM> {
 }
 
 impl<const DIM: usize> Add for Equation<DIM> {
-    type Output = Equation<DIM>;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         equation(
@@ -30,13 +30,21 @@ impl<const DIM: usize> Add for Equation<DIM> {
 }
 
 impl<const DIM: usize> Sub for Equation<DIM> {
-    type Output = Equation<DIM>;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         equation(
             self.normal_vector - rhs.normal_vector,
             self.constant_term - rhs.constant_term,
         )
+    }
+}
+
+impl<const DIM: usize> Mul<f64> for Equation<DIM> {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        self.scale(rhs)
     }
 }
 
@@ -82,5 +90,11 @@ mod tests {
         let equation_2 = equation(vector([1., -1.]), -5.);
 
         assert_eq!(equation_1 - equation_2, equation(vector([1., 4.]), 7.))
+    }
+
+    #[test]
+    fn scale() {
+        let e = equation(vector([0., 1.]), 3.);
+        assert_eq!(e * 2., equation(vector([0., 2.]), 6.));
     }
 }

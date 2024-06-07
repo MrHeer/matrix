@@ -72,7 +72,7 @@ impl<const DIM: usize> Vector<DIM> {
     pub fn angle(&self, other: &Self) -> Result<f64, String> {
         let self_normalize = self.normalize()?;
         let other_normalize = other.normalize()?;
-        let dot_product = self_normalize.dot(&other_normalize);
+        let dot_product = self_normalize * other_normalize;
         let fixed_product = match dot_product {
             dot_product if math::eq(dot_product, -1.0) => -1.0,
             dot_product if math::eq(dot_product, 1.0) => 1.0,
@@ -109,7 +109,7 @@ impl<const DIM: usize> Vector<DIM> {
     pub fn project(&self, basis: &Self) -> Result<Projection<DIM>, String> {
         let u = basis.normalize()?;
         let weight = self.dot(&u);
-        let parallel = u.scale(weight);
+        let parallel = u * weight;
         let orthogonal = *self - parallel;
         Ok(Projection {
             parallel,
@@ -166,13 +166,6 @@ mod tests {
     }
 
     #[test]
-    fn scale() {
-        let v = vector([1.671, -1.012, -0.318]);
-
-        assert_eq!(v.scale(7.41).round(3), vector([12.382, -7.499, -2.356]));
-    }
-
-    #[test]
     fn magnitude() {
         let round = round_factory(3);
 
@@ -209,19 +202,6 @@ mod tests {
             v.normalize(),
             Err(String::from(ZERO_VECTOR_HAS_NO_NORMALIZE))
         );
-    }
-
-    #[test]
-    fn dot() {
-        let round = round_factory(3);
-
-        let v = vector([7.887, 4.138]);
-        let w = vector([-8.802, 6.776]);
-        assert_eq!(round(v.dot(&w)), -41.382);
-
-        let v = vector([-5.955, -4.904, -1.874]);
-        let w = vector([-4.496, -8.755, 7.103]);
-        assert_eq!(round(v.dot(&w)), 56.397);
     }
 
     #[test]

@@ -51,10 +51,7 @@ impl<const DIM: usize> Equation<DIM> {
     }
 
     pub fn scale(&self, scalar: f64) -> Self {
-        equation(
-            self.normal_vector.scale(scalar),
-            self.constant_term * scalar,
-        )
+        equation(self.normal_vector * scalar, self.constant_term * scalar)
     }
 }
 
@@ -110,11 +107,5 @@ mod tests {
         let planes_2 = equation(vector([-2.642, 2.875, -2.404]), -2.443);
         assert_ne!(planes_1, planes_2);
         assert!(planes_1.is_parallel(&planes_2));
-    }
-
-    #[test]
-    fn scale() {
-        let e = equation(vector([0., 1.]), 3.);
-        assert_eq!(e.scale(2.), equation(vector([0., 2.]), 6.));
     }
 }

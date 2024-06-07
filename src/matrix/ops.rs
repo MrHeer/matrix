@@ -1,9 +1,17 @@
-use std::ops::{Add, Index, Sub};
+use std::ops::{Add, Index, Mul, Sub};
 
 use crate::{Matrix, Vector};
 
+impl<const ROW: usize, const COL: usize> Index<usize> for Matrix<ROW, COL> {
+    type Output = Vector<COL>;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.0[index]
+    }
+}
+
 impl<const ROW: usize, const COL: usize> Add for Matrix<ROW, COL> {
-    type Output = Matrix<ROW, COL>;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         self.into_iter()
@@ -14,7 +22,7 @@ impl<const ROW: usize, const COL: usize> Add for Matrix<ROW, COL> {
 }
 
 impl<const ROW: usize, const COL: usize> Sub for Matrix<ROW, COL> {
-    type Output = Matrix<ROW, COL>;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self.into_iter()
@@ -24,11 +32,19 @@ impl<const ROW: usize, const COL: usize> Sub for Matrix<ROW, COL> {
     }
 }
 
-impl<const ROW: usize, const COL: usize> Index<usize> for Matrix<ROW, COL> {
-    type Output = Vector<COL>;
+impl<const ROW: usize, const COL: usize> Mul<f64> for Matrix<ROW, COL> {
+    type Output = Self;
 
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.0[index]
+    fn mul(self, rhs: f64) -> Self::Output {
+        self.scale(rhs)
+    }
+}
+
+impl<const M: usize, const N: usize, const P: usize> Mul<Matrix<N, P>> for Matrix<M, N> {
+    type Output = Matrix<M, P>;
+
+    fn mul(self, rhs: Matrix<N, P>) -> Self::Output {
+        todo!()
     }
 }
 
@@ -51,6 +67,12 @@ mod tests {
             matrix([[2., 1., 2.], [4., 5., 1.]]),
             matrix([[2., 4., 2.], [4., 5., 1.]])
         );
+    }
+
+    #[test]
+    fn index() {
+        let m = matrix([[2., 3., 0.], [4., 8., 1.]]);
+        assert_eq!(m[1][0], 4.);
     }
 
     #[test]
@@ -93,11 +115,5 @@ mod tests {
         let r = a - b;
 
         assert_eq!(r.round(3), matrix([[-6., -6., -6.], [-6., -6., -6.]]));
-    }
-
-    #[test]
-    fn index() {
-        let m = matrix([[2., 3., 0.], [4., 8., 1.]]);
-        assert_eq!(m[1][0], 4.);
     }
 }

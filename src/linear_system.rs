@@ -42,7 +42,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
     }
 
     fn multiply_coefficient_and_row(&mut self, coefficient: f64, row: usize) {
-        self[row] = self[row].scale(coefficient);
+        self[row] = self[row] * coefficient;
     }
 
     fn add_multiple_times_row_to_row(
@@ -53,7 +53,7 @@ impl<const DIM: usize, const LEN: usize> LinearSystem<DIM, LEN> {
     ) {
         let to_add_equation = self[row_to_add];
         let to_be_added_to_equation = self[row_to_be_added_to];
-        let multiplied_to_add_equation = to_add_equation.scale(coefficient);
+        let multiplied_to_add_equation = to_add_equation * coefficient;
         self[row_to_be_added_to] = multiplied_to_add_equation + to_be_added_to_equation
     }
 

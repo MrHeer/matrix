@@ -41,7 +41,7 @@ mod tests {
     fn from_iter() {
         let v = matrix([[2., 3., 5.], [7., 2., 1.]])
             .into_iter()
-            .map(|x| x.scale(2.))
+            .map(|x| x * 2.)
             .collect::<Matrix<2, 3>>();
         assert_eq!(v, matrix([[4., 6., 10.], [14., 4., 2.]]));
     }
