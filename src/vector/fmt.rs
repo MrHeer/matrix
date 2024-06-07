@@ -14,7 +14,7 @@ impl<const DIM: usize> Display for Vector<DIM> {
             write!(f, ", ")?;
         }
         self[DIM - 1].fmt(f)?;
-        write!(f, "]")
+        writeln!(f, "]")
     }
 }
 
@@ -25,10 +25,10 @@ mod tests {
     #[test]
     fn fmt() {
         assert_eq!(format!("{}", vector([])), "[]");
-        assert_eq!(format!("{}", vector([2., 1., 3.])), "[2, 1, 3]");
+        assert_eq!(format!("{}", vector([2., 1., 3.])), "[2, 1, 3]\n");
         assert_eq!(
             format!("{:.1}", vector([2.53, 1.7823, 3.161])),
-            "[2.5, 1.8, 3.2]"
+            "[2.5, 1.8, 3.2]\n"
         );
     }
 }

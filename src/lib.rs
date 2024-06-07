@@ -1,10 +1,12 @@
 mod equation;
 pub mod line;
-pub mod linear_system;
+mod linear_system;
 pub mod math;
+mod matrix;
 pub mod round;
 mod vector;
 
 pub use equation::*;
-pub use linear_system::{linear_system, LinearSystem};
+pub use linear_system::*;
+pub use matrix::*;
 pub use vector::*;

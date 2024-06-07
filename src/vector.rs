@@ -34,7 +34,7 @@ impl<const DIM: usize> Vector<DIM> {
 
     pub fn map<F>(&self, f: F) -> Self
     where
-        F: FnMut(f64) -> f64,
+        F: Fn(f64) -> f64,
     {
         self.into_iter().map(f).collect()
     }

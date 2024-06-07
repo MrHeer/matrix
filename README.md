@@ -19,4 +19,10 @@ Some operations for `Vector` and `Matrix`.
 - [x] Area of parallelogram
 - [x] Area of triangle
 
+## Vector
+
+- [x] Add
+- [x] Sub
+- [x] Scale
+
 > The test data from [Linear Algebra Refresher Course](https://learn.udacity.com/courses/ud953)

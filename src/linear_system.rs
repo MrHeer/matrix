@@ -394,5 +394,11 @@ mod tests {
                 Solution::Some(vector([-1.177, 0.707, -0.083]))
             );
         }
+
+        let e1 = equation(vector([0.786, 0.786]), -0.714);
+        let e2 = equation(vector([-0.131, -0.131]), 0.319);
+        let s = linear_system([e1, e2]);
+        let solution = s.compute_solution();
+        assert_eq!(solution, Solution::None(String::from(NO_SOLUTIONS_MSG)));
     }
 }

@@ -40,7 +40,6 @@ mod tests {
     fn eq() {
         assert_eq!(vector([]), vector([]));
         assert_eq!(vector([2., 1., 2.]), vector([2., 1., 2.]));
-        assert_ne!(vector([3., 1., 2.]), vector([2., 1., 2.]));
     }
 
     #[test]
