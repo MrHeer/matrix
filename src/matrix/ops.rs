@@ -44,7 +44,7 @@ impl<const M: usize, const N: usize, const P: usize> Mul<Matrix<N, P>> for Matri
     type Output = Matrix<M, P>;
 
     fn mul(self, rhs: Matrix<N, P>) -> Self::Output {
-        todo!()
+        self.multiply(&rhs)
     }
 }
 
@@ -80,19 +80,16 @@ mod tests {
         let a = matrix([[1., 2., 3.]]);
         let b = matrix([[4., 5., 6.]]);
         let r = a + b;
-
         assert_eq!(r.round(3), matrix([[5., 7., 9.]]));
 
         let a = matrix([[4.]]);
         let b = matrix([[5.]]);
         let r = a + b;
-
         assert_eq!(r.round(3), matrix([[9.]]));
 
         let a = matrix([[1., 2., 3.], [4., 5., 6.]]);
         let b = matrix([[7., 8., 9.], [10., 11., 12.]]);
         let r = a + b;
-
         assert_eq!(r.round(3), matrix([[8., 10., 12.], [14., 16., 18.]]));
     }
 
@@ -101,19 +98,45 @@ mod tests {
         let a = matrix([[1., 2., 3.]]);
         let b = matrix([[4., 5., 6.]]);
         let r = a - b;
-
         assert_eq!(r.round(3), matrix([[-3., -3., -3.]]));
 
         let a = matrix([[4.]]);
         let b = matrix([[5.]]);
         let r = a - b;
-
         assert_eq!(r.round(3), matrix([[-1.]]));
 
         let a = matrix([[1., 2., 3.], [4., 5., 6.]]);
         let b = matrix([[7., 8., 9.], [10., 11., 12.]]);
         let r = a - b;
-
         assert_eq!(r.round(3), matrix([[-6., -6., -6.], [-6., -6., -6.]]));
+    }
+
+    #[test]
+    fn mul() {
+        let a = matrix([[5.], [2.]]);
+        let b = matrix([[5., 1.]]);
+        let r = a * b;
+        assert_eq!(r.round(3), matrix([[25., 5.], [10., 2.]]));
+
+        let a = matrix([[5., 1.]]);
+        let b = matrix([[5.], [2.]]);
+        let r = a * b;
+        assert_eq!(r.round(3), matrix([[27.]]));
+
+        let a = matrix([[3.]]);
+        let b = matrix([[4.]]);
+        let r = a * b;
+        assert_eq!(r.round(3), matrix([[12.]]));
+
+        let a = matrix([[2., 1., 8., 2., 1.], [5., 6., 4., 2., 1.]]);
+        let b = matrix([
+            [1., 7., 2.],
+            [2., 6., 3.],
+            [3., 1., 1.],
+            [1., 20., 1.],
+            [7., 4., 16.],
+        ]);
+        let r = a * b;
+        assert_eq!(r.round(3), matrix([[37., 72., 33.], [38., 119., 50.]]));
     }
 }

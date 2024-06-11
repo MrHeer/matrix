@@ -43,4 +43,25 @@ impl<const ROW: usize, const COL: usize> Matrix<ROW, COL> {
     pub fn scale(&self, scalar: f64) -> Self {
         self.map(|x| x * scalar)
     }
+
+    pub fn get_row(&self, row: usize) -> Vector<COL> {
+        self[row]
+    }
+
+    pub fn get_col(&self, col: usize) -> Vector<ROW> {
+        self.into_iter().map(|vector| vector[col]).collect()
+    }
+
+    pub fn multiply<const OTHER_COL: usize>(
+        &self,
+        other: &Matrix<COL, OTHER_COL>,
+    ) -> Matrix<ROW, OTHER_COL> {
+        (0..self.row())
+            .map(|row| {
+                (0..other.col())
+                    .map(|col| self.get_row(row) * other.get_col(col))
+                    .collect()
+            })
+            .collect()
+    }
 }

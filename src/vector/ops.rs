@@ -74,7 +74,6 @@ mod tests {
         let a = vector([8.218, -9.341]);
         let b = vector([-1.129, 2.111]);
         let r = a + b;
-
         assert_eq!(r.round(3), vector([7.089, -7.23]));
     }
 
@@ -83,7 +82,6 @@ mod tests {
         let a = vector([7.119, 8.215]);
         let b = vector([-8.223, 0.878]);
         let r = a - b;
-
         assert_eq!(r.round(3), vector([15.342, 7.337]));
     }
 
