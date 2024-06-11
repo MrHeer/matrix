@@ -56,12 +56,43 @@ impl<const ROW: usize, const COL: usize> Matrix<ROW, COL> {
         &self,
         other: &Matrix<COL, OTHER_COL>,
     ) -> Matrix<ROW, OTHER_COL> {
-        (0..self.row())
+        let transpose_other = other.transpose();
+        self.into_iter()
             .map(|row| {
-                (0..other.col())
-                    .map(|col| self.get_row(row) * other.get_col(col))
+                transpose_other
+                    .into_iter()
+                    .map(|other_col| row * other_col)
                     .collect()
             })
             .collect()
+    }
+
+    pub fn transpose(&self) -> Matrix<COL, ROW> {
+        (0..self.col())
+            .map(|col| (0..self.row()).map(|row| self[row][col]).collect())
+            .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::matrix;
+
+    #[test]
+    fn transpose() {
+        let m = matrix([[5., 4., 1., 7.], [2., 1., 3., 5.]]);
+        assert_eq!(
+            m.transpose(),
+            matrix([[5., 2.], [4., 1.], [1., 3.], [7., 5.]])
+        );
+
+        let m = matrix([[5.]]);
+        assert_eq!(m.transpose(), matrix([[5.]]));
+
+        let m = matrix([[5., 3., 2.], [7., 1., 4.], [1., 1., 2.], [8., 9., 1.]]);
+        assert_eq!(
+            m.transpose(),
+            matrix([[5., 7., 1., 8.], [3., 1., 1., 9.], [2., 4., 2., 1.]])
+        );
     }
 }

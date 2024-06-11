@@ -80,17 +80,17 @@ mod tests {
         let a = matrix([[1., 2., 3.]]);
         let b = matrix([[4., 5., 6.]]);
         let r = a + b;
-        assert_eq!(r.round(3), matrix([[5., 7., 9.]]));
+        assert_eq!(r, matrix([[5., 7., 9.]]));
 
         let a = matrix([[4.]]);
         let b = matrix([[5.]]);
         let r = a + b;
-        assert_eq!(r.round(3), matrix([[9.]]));
+        assert_eq!(r, matrix([[9.]]));
 
         let a = matrix([[1., 2., 3.], [4., 5., 6.]]);
         let b = matrix([[7., 8., 9.], [10., 11., 12.]]);
         let r = a + b;
-        assert_eq!(r.round(3), matrix([[8., 10., 12.], [14., 16., 18.]]));
+        assert_eq!(r, matrix([[8., 10., 12.], [14., 16., 18.]]));
     }
 
     #[test]
@@ -98,17 +98,17 @@ mod tests {
         let a = matrix([[1., 2., 3.]]);
         let b = matrix([[4., 5., 6.]]);
         let r = a - b;
-        assert_eq!(r.round(3), matrix([[-3., -3., -3.]]));
+        assert_eq!(r, matrix([[-3., -3., -3.]]));
 
         let a = matrix([[4.]]);
         let b = matrix([[5.]]);
         let r = a - b;
-        assert_eq!(r.round(3), matrix([[-1.]]));
+        assert_eq!(r, matrix([[-1.]]));
 
         let a = matrix([[1., 2., 3.], [4., 5., 6.]]);
         let b = matrix([[7., 8., 9.], [10., 11., 12.]]);
         let r = a - b;
-        assert_eq!(r.round(3), matrix([[-6., -6., -6.], [-6., -6., -6.]]));
+        assert_eq!(r, matrix([[-6., -6., -6.], [-6., -6., -6.]]));
     }
 
     #[test]
@@ -116,17 +116,17 @@ mod tests {
         let a = matrix([[5.], [2.]]);
         let b = matrix([[5., 1.]]);
         let r = a * b;
-        assert_eq!(r.round(3), matrix([[25., 5.], [10., 2.]]));
+        assert_eq!(r, matrix([[25., 5.], [10., 2.]]));
 
         let a = matrix([[5., 1.]]);
         let b = matrix([[5.], [2.]]);
         let r = a * b;
-        assert_eq!(r.round(3), matrix([[27.]]));
+        assert_eq!(r, matrix([[27.]]));
 
         let a = matrix([[3.]]);
         let b = matrix([[4.]]);
         let r = a * b;
-        assert_eq!(r.round(3), matrix([[12.]]));
+        assert_eq!(r, matrix([[12.]]));
 
         let a = matrix([[2., 1., 8., 2., 1.], [5., 6., 4., 2., 1.]]);
         let b = matrix([
@@ -137,6 +137,50 @@ mod tests {
             [7., 4., 16.],
         ]);
         let r = a * b;
-        assert_eq!(r.round(3), matrix([[37., 72., 33.], [38., 119., 50.]]));
+        assert_eq!(r, matrix([[37., 72., 33.], [38., 119., 50.]]));
+
+        let a = matrix([[5., 3., 1.], [6., 2., 7.]]);
+        let b = matrix([[4., 2.], [8., 1.], [7., 4.]]);
+        let r = a * b;
+        assert_eq!(r, matrix([[51., 17.], [89., 42.]]));
+
+        let a = matrix([[5.]]);
+        let b = matrix([[4.]]);
+        let r = a * b;
+        assert_eq!(r, matrix([[20.]]));
+
+        let a = matrix([
+            [2., 8., 1., 2., 9.],
+            [7., 9., 1., 10., 5.],
+            [8., 4., 11., 98., 2.],
+            [5., 5., 4., 4., 1.],
+        ]);
+        let b = matrix([[4.], [2.], [17.], [80.], [2.]]);
+        let r = a * b;
+        assert_eq!(r, matrix([[219.], [873.], [8071.], [420.]]));
+
+        let a = matrix([
+            [2., 8., 1., 2., 9.],
+            [7., 9., 1., 10., 5.],
+            [8., 4., 11., 98., 2.],
+            [5., 5., 4., 4., 1.],
+        ]);
+        let b = matrix([
+            [4., 1., 2.],
+            [2., 3., 1.],
+            [17., 8., 1.],
+            [1., 3., 0.],
+            [2., 1., 4.],
+        ]);
+        let r = a * b;
+        assert_eq!(
+            r,
+            matrix([
+                [61., 49., 49.],
+                [83., 77., 44.],
+                [329., 404., 39.],
+                [104., 65., 23.]
+            ])
+        );
     }
 }
