@@ -11,7 +11,7 @@ pub struct Matrix<const ROW: usize, const COL: usize>([Vector<COL>; ROW]);
 
 impl<const ROW: usize, const COL: usize> From<[[f64; COL]; ROW]> for Matrix<ROW, COL> {
     fn from(value: [[f64; COL]; ROW]) -> Self {
-        value.into_iter().map(|arr| vector(arr)).collect()
+        value.into_iter().map(vector).collect()
     }
 }
 
@@ -32,9 +32,7 @@ impl<const ROW: usize, const COL: usize> Matrix<ROW, COL> {
     where
         F: Fn(f64) -> f64,
     {
-        self.into_iter()
-            .map(|vector| vector.map(|x| f(x)))
-            .collect()
+        self.into_iter().map(|vector| vector.map(&f)).collect()
     }
 
     pub fn round(&self, precision: usize) -> Self {

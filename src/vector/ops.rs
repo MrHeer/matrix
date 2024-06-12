@@ -87,6 +87,7 @@ mod tests {
 
     #[test]
     fn scale() {
+        #[allow(clippy::approx_constant)]
         let v = vector([1.671, -1.012, -0.318]);
 
         assert_eq!((v * 7.41).round(3), vector([12.382, -7.499, -2.356]));
