@@ -19,7 +19,7 @@ Some operations for `Vector` and `Matrix`.
 - [x] Area of parallelogram
 - [x] Area of triangle
 
-## Vector
+## Matrix
 
 - [x] Add
 - [x] Sub
