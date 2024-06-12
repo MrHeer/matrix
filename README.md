@@ -27,5 +27,6 @@ Some operations for `Vector` and `Matrix`.
 - [x] Multiplication
 - [x] Transpose
 - [x] Identity
+- [x] Inverse
 
 > The test data from [Linear Algebra Refresher Course](https://learn.udacity.com/courses/ud953)

@@ -4,6 +4,8 @@ mod ops;
 
 use crate::{round::round_factory, vector, Vector};
 
+const MATRIX_IS_NOT_INVERTIBLE: &str = "Matrix is not invertible.";
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Matrix<const ROW: usize, const COL: usize>([Vector<COL>; ROW]);
 
@@ -80,9 +82,34 @@ pub fn identity<const N: usize>() -> Matrix<N, N> {
         .collect()
 }
 
+impl Matrix<1, 1> {
+    pub fn inverse(&self) -> Self {
+        matrix([[1. / self[0][0]]])
+    }
+}
+
+impl Matrix<2, 2> {
+    pub fn inverse(&self) -> Result<Self, String> {
+        let a = self[0][0];
+        let b = self[0][1];
+        let c = self[1][0];
+        let d = self[1][1];
+
+        let det = a * d - b * c;
+        let tr = a + d;
+
+        if det == 0. {
+            return Err(String::from(MATRIX_IS_NOT_INVERTIBLE));
+        }
+
+        Ok((identity() * tr - *self) * (1. / det))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::matrix;
+    use crate::matrix::MATRIX_IS_NOT_INVERTIBLE;
 
     #[test]
     fn transpose() {
@@ -123,5 +150,22 @@ mod tests {
         let m = matrix([[5., 9., 2., 4.], [3., 8., 5., 6.], [1., 0., 0., 15.]]);
         assert_eq!(m * matrix::identity(), m);
         assert_eq!(matrix::identity() * m, m);
+    }
+
+    #[test]
+    fn inverse() {
+        assert_eq!(matrix([[100.]]).inverse(), matrix([[0.01]]));
+        assert_eq!(
+            matrix([[4., 5.], [7., 1.]]).inverse().unwrap(),
+            matrix([
+                [-0.03225806451612903, 0.16129032258064516],
+                [0.22580645161290322, -0.12903225806451613]
+            ])
+        );
+
+        assert_eq!(
+            matrix([[4., 2.], [14., 7.]]).inverse(),
+            Err(String::from(MATRIX_IS_NOT_INVERTIBLE))
+        );
     }
 }
