@@ -24,5 +24,8 @@ Some operations for `Vector` and `Matrix`.
 - [x] Add
 - [x] Sub
 - [x] Scale
+- [x] Multiplication
+- [x] Transpose
+- [x] Identity
 
 > The test data from [Linear Algebra Refresher Course](https://learn.udacity.com/courses/ud953)

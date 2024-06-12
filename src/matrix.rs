@@ -74,6 +74,12 @@ impl<const ROW: usize, const COL: usize> Matrix<ROW, COL> {
     }
 }
 
+pub fn identity<const N: usize>() -> Matrix<N, N> {
+    (0..N)
+        .map(|row| (0..N).map(|col| if row == col { 1. } else { 0. }).collect())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use crate::matrix;
@@ -94,5 +100,28 @@ mod tests {
             m.transpose(),
             matrix([[5., 7., 1., 8.], [3., 1., 1., 9.], [2., 4., 2., 1.]])
         );
+    }
+
+    #[test]
+    fn identity() {
+        assert_eq!(matrix::identity(), matrix([[1.]]));
+        assert_eq!(matrix::identity(), matrix([[1., 0.], [0., 1.]]));
+        assert_eq!(
+            matrix::identity(),
+            matrix([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+        );
+        assert_eq!(
+            matrix::identity(),
+            matrix([
+                [1., 0., 0., 0.],
+                [0., 1., 0., 0.],
+                [0., 0., 1., 0.],
+                [0., 0., 0., 1.]
+            ])
+        );
+
+        let m = matrix([[5., 9., 2., 4.], [3., 8., 5., 6.], [1., 0., 0., 15.]]);
+        assert_eq!(m * matrix::identity(), m);
+        assert_eq!(matrix::identity() * m, m);
     }
 }
