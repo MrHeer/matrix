@@ -38,10 +38,10 @@ impl Line {
         let c = other.normal_vector[0];
         let d = other.normal_vector[1];
         let k2 = other.constant_term;
-        let divsion = a * d - b * c;
+        let division = a * d - b * c;
         Some(vector([
-            (d * k1 - b * k2) / divsion,
-            (-c * k1 + a * k2) / divsion,
+            (d * k1 - b * k2) / division,
+            (-c * k1 + a * k2) / division,
         ]))
     }
 }
